@@ -6,6 +6,7 @@ The data should be stored in MapR Json DB by storing batches of data points in e
 Tasks:
 
 1. Need CV github id's
+2. Install and run car simulator, define data access strategy
 1. Need streams sand box or AWS instance
 2. Need slide show on time series
 3. Need details on data transfer architecture
