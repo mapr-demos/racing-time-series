@@ -5,27 +5,29 @@ The data should be stored in MapR Json DB by storing batches of data points in e
 
 Tasks:
 
-1. Need CV github id's
 2. Install and run car simulator, define data access strategy
-1. Need streams sand box or AWS instance
+1. Need streams sand box or AWS instance (Tug getting link to 5.1 preview)
 2. Need slide show on time series
-3. Need details on data transfer architecture
-4. Need details on API for visualization
+3. Need details on data transfer architecture (see wiki)
+4. Need details on API and algos for visualization (see wiki)
 
 
 The goal is to have real-time data acquisition flow through multiple clusters that are intermittently connected.
 
 Telemetry info
+
 http://www.f1fanatic.co.uk/2014/08/07/ferraris-telemetry-lap-hungaroring/ferrari-telemetry-hungaroring-1/
 http://www.mclaren.com/appliedtechnologies/products/item/atlas/
 https://www.metasphere.co.uk/telemetry-data-journey-f1/
 
 Car simulators
+
 http://wiki.vdrift.net/index.php?title=About_the_project
 http://vamos.sourceforge.net/
 http://164.100.133.129:81/eCONTENT/Uploads/VDHS-0%20Vehicle%20Dynamics.pdf
 
 High level control
+
 https://f1metrics.wordpress.com/2014/10/03/building-a-race-simulator/
 http://www.nt.ntnu.no/users/skoge/prost/proceedings/ifac11-proceedings/data/html/papers/2954.pdf
 https://www.math.uni-magdeburg.de/institute/imo/ag_sager/PUBLICATIONS/Kehrle2010.pdf
