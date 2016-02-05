@@ -26,7 +26,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2016-02-05 16:08:00 +0000</string>
+	<string>2016-02-05 16:33:02 +0000</string>
 	<key>Modifier</key>
 	<string>Ted Dunning</string>
 	<key>NotesVisible</key>
@@ -213,6 +213,43 @@
 			</array>
 			<key>GraphicsList</key>
 			<array>
+				<dict>
+					<key>Class</key>
+					<string>LineGraphic</string>
+					<key>ID</key>
+					<integer>72</integer>
+					<key>Points</key>
+					<array>
+						<string>{120.875, 99.125}</string>
+						<string>{145.8436450958252, 136.625}</string>
+					</array>
+					<key>Style</key>
+					<dict>
+						<key>stroke</key>
+						<dict>
+							<key>HeadArrow</key>
+							<string>0</string>
+							<key>Legacy</key>
+							<true/>
+							<key>TailArrow</key>
+							<string>0</string>
+							<key>Width</key>
+							<real>3</real>
+						</dict>
+					</dict>
+				</dict>
+				<dict>
+					<key>Bounds</key>
+					<string>{{103, 107}, {20, 15}}</string>
+					<key>Class</key>
+					<string>ShapedGraphic</string>
+					<key>ID</key>
+					<integer>71</integer>
+					<key>Rotation</key>
+					<real>326</real>
+					<key>Shape</key>
+					<string>Rectangle</string>
+				</dict>
 				<dict>
 					<key>Class</key>
 					<string>Group</string>
@@ -1625,15 +1662,15 @@
 		<key>SidebarWidth</key>
 		<integer>120</integer>
 		<key>VisibleRegion</key>
-		<string>{{15, 0}, {561, 603}}</string>
+		<string>{{77.625, 75.375}, {140.25, 150.75}}</string>
 		<key>Zoom</key>
-		<real>1</real>
+		<real>4</real>
 		<key>ZoomValues</key>
 		<array>
 			<array>
 				<string>Canvas 1</string>
-				<real>1</real>
-				<real>1</real>
+				<real>4</real>
+				<real>2</real>
 			</array>
 			<array>
 				<string>extras</string>
