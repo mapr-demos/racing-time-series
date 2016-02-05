@@ -1,6 +1,8 @@
 # racing-time-series
 Sample time-series application using car telemetry as the use case without Open TSDB
 
+The data should be stored in MapR Json DB by storing batches of data points in each record. The data should be transmitted via MapR Streams, but eventually stored in MapR Json DB.
+
 The goal is to have real-time data acquisition flow through multiple clusters that are intermittently connected.
 
 Telemetry info
