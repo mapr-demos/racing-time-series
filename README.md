@@ -3,6 +3,13 @@ Sample time-series application using car telemetry as the use case without Open 
 
 The data should be stored in MapR Json DB by storing batches of data points in each record. The data should be transmitted via MapR Streams, but eventually stored in MapR Json DB.
 
+Tasks:
+
+1. Need CV github id's
+1. Need streams sand box or AWS instance
+2. Need slide show on time series
+
+
 The goal is to have real-time data acquisition flow through multiple clusters that are intermittently connected.
 
 Telemetry info
