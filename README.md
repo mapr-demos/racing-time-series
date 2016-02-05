@@ -8,6 +8,8 @@ Tasks:
 1. Need CV github id's
 1. Need streams sand box or AWS instance
 2. Need slide show on time series
+3. Need details on data transfer architecture
+4. Need details on API for visualization
 
 
 The goal is to have real-time data acquisition flow through multiple clusters that are intermittently connected.
