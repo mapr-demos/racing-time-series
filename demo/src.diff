@@ -1,0 +1,512 @@
+diff -ruN -x torcsdoc.conf torcs-1.3.6/src/drivers/human/human.cpp torcs-1.3.6-new/src/drivers/human/human.cpp
+--- torcs-1.3.6/src/drivers/human/human.cpp	2014-02-14 10:39:13.000000000 +0000
++++ torcs-1.3.6-new/src/drivers/human/human.cpp	2016-02-08 17:06:11.135894701 +0000
+@@ -1,3 +1,4 @@
++#define TELEMETRY
+ /***************************************************************************
+ 
+     file                 : human.cpp
+@@ -342,7 +343,6 @@
+ 	memset(currentKey, 0, sizeof(currentKey));
+ 	memset(currentSKey, 0, sizeof(currentSKey));
+ 
+-
+ #ifndef WIN32
+ #ifdef TELEMETRY
+ 	if (s->_raceType == RM_TYPE_PRACTICE) {
+@@ -350,9 +350,9 @@
+ 		RtTelemNewChannel("Dist", &HCtx[idx]->distToStart, 0, 0);
+ 		RtTelemNewChannel("Ax", &car->_accel_x, 0, 0);
+ 		RtTelemNewChannel("Ay", &car->_accel_y, 0, 0);
+-		RtTelemNewChannel("Steer", &car->ctrl->steer, 0, 0);
+-		RtTelemNewChannel("Throttle", &car->ctrl->accelCmd, 0, 0);
+-		RtTelemNewChannel("Brake", &car->ctrl->brakeCmd, 0, 0);
++		RtTelemNewChannel("Steer", &car->ctrl.steer, 0, 0);
++		RtTelemNewChannel("Throttle", &car->ctrl.accelCmd, 0, 0);
++		RtTelemNewChannel("Brake", &car->ctrl.brakeCmd, 0, 0);
+ 		RtTelemNewChannel("Gear", &HCtx[idx]->Gear, 0, 0);
+ 		RtTelemNewChannel("Speed", &car->_speed_x, 0, 0);
+ 	}
+diff -ruN -x torcsdoc.conf torcs-1.3.6/src/drivers/inferno/inferno.cpp torcs-1.3.6-new/src/drivers/inferno/inferno.cpp
+--- torcs-1.3.6/src/drivers/inferno/inferno.cpp	2013-08-05 17:22:44.000000000 +0000
++++ torcs-1.3.6-new/src/drivers/inferno/inferno.cpp	2016-02-09 15:36:20.760053099 +0000
+@@ -157,6 +157,52 @@
+ 	mycar[index-1] = new MyCar(myTrackDesc, car, situation);
+ 
+ 	currenttime = situation->currentTime;
++
++	RtTelemInit(-10, 10);
++	// RtTelemNewChannel("Id", &car->index, 0, 0);
++	char* channelName = new char[15];
++	sprintf(channelName, "Ax%d", index);
++	RtTelemNewChannel(channelName, &car->_accel_x, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Ay%d", index);
++	RtTelemNewChannel(channelName, &car->_accel_y, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Vaz%d", index);
++	RtTelemNewChannel(channelName, &car->_yaw_rate, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Steer%d", index);
++	RtTelemNewChannel(channelName, &car->_steerCmd, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Throttle%d", index);
++	RtTelemNewChannel(channelName, &car->_accelCmd, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Brake%d", index);
++	RtTelemNewChannel(channelName, &car->_brakeCmd, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Gear%d", index);
++	RtTelemNewChannel(channelName, &mycar[index-1]->gear, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Speed%d", index);
++	RtTelemNewChannel(channelName, &car->_speed_x, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "LapTime%d", index);
++	RtTelemNewChannel(channelName, &mycar[index-1]->lapTime, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "RPM%d", index);
++	RtTelemNewChannel(channelName, &car->_enginerpm, 0, 0);
++
++	channelName = new char[15];
++	sprintf(channelName, "Fuel%d", index);
++	RtTelemNewChannel(channelName, &car->_fuel, 0, 0);
+ }
+ 
+ 
+@@ -172,9 +218,14 @@
+ 	tdble b5;							// Brake for the pit;
+ 	tdble steer, targetAngle, shiftaccel;
+ 
++	int 		idx = index - 1;
++    static int		lap[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+ 	MyCar* myc = mycar[index-1];
+ 	Pathfinder* mpf = myc->getPathfinderPtr();
+ 
++	myc->gear = (tdble)car->_gear;
++	myc->lapTime = (tdble)car->_curLapTime;
++
+ 	b1 = b2 = b3 = b4 = b5 = 0.0;
+ 	shiftaccel = 0.0;
+ 
+@@ -457,6 +508,44 @@
+ 
+ 	if (myc->tr_mode == 0) car->_steerCmd = steer;
+ 	car->_clutchCmd = getClutch(myc, car);
++
++	#if 1
++ //    if (car->_laps == 2) {
++	// if (s->_raceType == RM_TYPE_PRACTICE) {
++	//     if (lap[idx] == 1) {
++	// 	RtTelemStartMonitoring("Inferno2");
++	//     }
++	//     RtTelemUpdate(car->_curLapTime);
++	// }
++ //    }
++ //    if (car->_laps == 3) {
++	// if (s->_raceType == RM_TYPE_PRACTICE) {
++	//     if (lap[idx] == 2) {
++	// 	RtTelemShutdown();
++	//     }
++	// }
++ //    }
++    if ((car->_laps > 0) && (car->_laps < 3)) {
++		if (lap[idx] == 0) {
++			// char monitoringName[10];
++			// sprintf(monitoringName, "Inferno%d", idx);
++			// RtTelemStartMonitoring(monitoringName);
++			RtTelemStartMonitoring("Inferno");
++		}
++		RtTelemUpdate(situation->currentTime);
++	}
++	if (car->_laps == 3) {
++		// if (lap[idx] == 4) {
++		// 	RtTelemShutdown();
++		// }
++		int carsInLastLap = 0;
++		for (int i=0; i<10; i++) {
++			if (lap[i]<=2 && lap[i]!=0) carsInLastLap++;
++		}
++		if (carsInLastLap == 1) RtTelemShutdown();
++	}
++#endif
++    lap[idx] = car->_laps;
+ }
+ 
+ 
+diff -ruN -x torcsdoc.conf torcs-1.3.6/src/drivers/inferno/mycar.h torcs-1.3.6-new/src/drivers/inferno/mycar.h
+--- torcs-1.3.6/src/drivers/inferno/mycar.h	2008-11-09 17:50:20.000000000 +0000
++++ torcs-1.3.6-new/src/drivers/inferno/mycar.h	2016-02-09 13:52:59.584926690 +0000
+@@ -145,6 +145,8 @@
+ 		double cw;
+ 
+ 		// Dynamic data.
++		tdble gear;
++		tdble lapTime;
+ 		double mass;
+ 		int destsegid;
+ 		double trtime;
+diff -ruN -x torcsdoc.conf torcs-1.3.6/src/drivers/inferno2/inferno2.cpp torcs-1.3.6-new/src/drivers/inferno2/inferno2.cpp
+--- torcs-1.3.6/src/drivers/inferno2/inferno2.cpp	2012-02-09 22:36:27.000000000 +0000
++++ torcs-1.3.6-new/src/drivers/inferno2/inferno2.cpp	2016-02-09 10:57:42.963626778 +0000
+@@ -408,7 +408,7 @@
+     tdble		vtgt1, vtgt2;
+     tdble		curAdv, /*curAdvMax,*/ Amax, Atmp, AdvMax;
+ 
+-    //static int		lap[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
++    static int		lap[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+     static tdble	lgfsprev[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+     static tdble	adv[10];
+     
+@@ -522,24 +522,35 @@
+ 	car->_steerCmd *= 5.0;
+     }
+ 
+-#if 0
+-    if (car->_laps == 2) {
+-	if (s->_raceType == RM_TYPE_PRACTICE) {
+-	    if (lap[idx] == 1) {
+-		RtTelemStartMonitoring("Inferno2");
+-	    }
+-	    RtTelemUpdate(car->_curLapTime);
++#if 1
++ //    if (car->_laps == 2) {
++	// if (s->_raceType == RM_TYPE_PRACTICE) {
++	//     if (lap[idx] == 1) {
++	// 	RtTelemStartMonitoring("Inferno2");
++	//     }
++	//     RtTelemUpdate(car->_curLapTime);
++	// }
++ //    }
++ //    if (car->_laps == 3) {
++	// if (s->_raceType == RM_TYPE_PRACTICE) {
++	//     if (lap[idx] == 2) {
++	// 	RtTelemShutdown();
++	//     }
++	// }
++ //    }
++    if ((car->_laps > 1) && (car->_laps < 5)) {
++		if (lap[idx] == 1) {
++			RtTelemStartMonitoring("Inferno2");
++		}
++		RtTelemUpdate(car->_curLapTime);
+ 	}
+-    }
+-    if (car->_laps == 3) {
+-	if (s->_raceType == RM_TYPE_PRACTICE) {
+-	    if (lap[idx] == 2) {
+-		RtTelemShutdown();
+-	    }
++	if (car->_laps == 5) {
++		if (lap[idx] == 4) {
++			RtTelemShutdown();
++		}
+ 	}
+-    }
+ #endif
+-    //lap[idx] = car->_laps;
++    lap[idx] = car->_laps;
+ 
+     InvBrkCmd = - car->_brakeCmd;
+ }
+diff -ruN -x torcsdoc.conf torcs-1.3.6/src/libs/robottools/rttelem.cpp torcs-1.3.6-new/src/libs/robottools/rttelem.cpp
+--- torcs-1.3.6/src/libs/robottools/rttelem.cpp	2011-12-28 15:00:48.000000000 +0000
++++ torcs-1.3.6-new/src/libs/robottools/rttelem.cpp	2016-02-09 15:39:33.227729248 +0000
+@@ -4,7 +4,7 @@
+     created              : Mon Feb 28 22:38:31 CET 2000
+     copyright            : (C) 2000 by Eric Espie
+     email                : torcs@free.fr
+-    version              : $Id: rttelem.cpp,v 1.8.2.2 2011/12/28 15:00:48 berniw Exp $
++    version              : $Id: rttelem.cpp,v 1.7 2003/08/25 18:50:00 torcs Exp $
+ 
+  ***************************************************************************/
+ 
+@@ -17,119 +17,124 @@
+  *                                                                         *
+  ***************************************************************************/
+ 
+-/** @file	
+-    		This is a collection of useful functions for using telemetry in a robot.
+-		You can see an example of telemetry usage in the human driver.
+-    @author	<a href=mailto:torcs@free.fr>Eric Espie</a>
+-    @version	$Id: rttelem.cpp,v 1.8.2.2 2011/12/28 15:00:48 berniw Exp $
+-    @ingroup	robottools
++/** @file   
++            This is a collection of useful functions for using telemetry in a robot.
++        You can see an example of telemetry usage in the human driver.
++    @author <a href=mailto:torcs@free.fr>Eric Espie</a>
++    @version    $Id: rttelem.cpp,v 1.7 2003/08/25 18:50:00 torcs Exp $
++    @ingroup    robottools
+ */
+ 
+-/** @defgroup telemetry		Telemetry tools for robots.
++/** @defgroup telemetry     Telemetry tools for robots.
+     The telemetry is only working with Linux.
+     <br>The graphs are build by gnuplot.
+-    @ingroup	robottools
++    @ingroup    robottools
+ */
+     
+ #include <stdlib.h>
+ #include <stdio.h>
++#include <string.h>
+ #ifdef WIN32
+ #include <windows.h>
+ #endif
+ #include <telemetry.h>
+ #include <robottools.h>
+ #include <tgf.h>
+-#include <portability.h>
+ 
+-#if 0
+-static tTelemItf	tlm;
+-static tModList		*modlist = (tModList*)NULL;
++#if 1
++static tTelemItf    tlm;
++static tModList     *modlist = (tModList*)NULL;
++static bool TlmModLoaded = false;
+ #endif
+ 
+ /** Initialization of a telemetry session.
+-    @ingroup	telemetry
+-    @param	ymin	Minimum value for Y.
+-    @param	ymax	Maximum value for Y.
+-    @return	None
++    @ingroup    telemetry
++    @param  ymin    Minimum value for Y.
++    @param  ymax    Maximum value for Y.
++    @return None
+  */
+ void RtTelemInit(tdble ymin, tdble ymax)
+ {
+-#ifdef later
+-	const int BUFSIZE = 256;
+-    char	buf[BUFSIZE];
+-    tModInfo	*curModInfo;
+-
+-    memset(&tlm, 0, sizeof(tTelemItf));
+-    snprintf(buf, BUFSIZE, "%smodules/telemetry/%s.%s", "telemetry", GetLibDir (), DLLEXT);
+-    if (GfModLoad(TLM_IDENT, buf, &modlist)) return;
+-    GfOut("--- %s loaded ---\n", modlist->modInfo->name);
+-    curModInfo = modlist->modInfo;
+-    curModInfo->fctInit(curModInfo->index, &tlm);
+-
+-    tlm.init(ymin, ymax);
++#if 1
++    if (!TlmModLoaded) {
++        char    buf[256];
++        tModInfo    *curModInfo;
++
++        memset(&tlm, 0, sizeof(tTelemItf));
++        //sprintf(buf, "%smodules/telemetry/%s.%s", "telemetry", GetLibDir (), DLLEXT);
++        sprintf(buf, "%smodules/telemetry/%s.%s", GetLibDir (), "telemetry", DLLEXT);
++        if (GfModLoad(TLM_IDENT, buf, &modlist)) return;
++        GfOut("--- %s loaded ---\n", modlist->modInfo->name);
++        curModInfo = modlist->modInfo;
++        curModInfo->fctInit(curModInfo->index, &tlm);
++
++        tlm.init(ymin, ymax);
++        TlmModLoaded = true;
++    }
+ #endif
+ }
+ 
+ 
+ /** Create a new telemetry channel.
+-    @ingroup	telemetry
+-    @param	name	Name of the channel.
+-    @param	var	Address of the variable to monitor.
+-    @param	min	Minimum value of this variable.
+-    @param	max	Maximum value of this variable.
+-    @return	None
++    @ingroup    telemetry
++    @param  name    Name of the channel.
++    @param  var Address of the variable to monitor.
++    @param  min Minimum value of this variable.
++    @param  max Maximum value of this variable.
++    @return None
+  */
+ void RtTelemNewChannel(const char * name, tdble * var, tdble min, tdble max)
+ {
+-#if 0
++#if 1
+     tlm.newChannel(name, var, min, max);
+ #endif
+ }
+ 
+ /** Start recording into a file.
+-    @ingroup	telemetry
+-    @param	filename	name of the file to use.
+-    @return	none.
++    @ingroup    telemetry
++    @param  filename    name of the file to use.
++    @return none.
+  */
+ void RtTelemStartMonitoring(const char * filename)
+ {
+-#if 0
++#if 1
+     tlm.startMonitoring(filename);
+ #endif
+ }
+ 
+ /** Stop recording and close the file.
+-    @ingroup	telemetry
+-    @return	none
++    @ingroup    telemetry
++    @return none
+  */
+ void RtTelemStopMonitoring(void)
+ {
+-#if 0
++#if 1
+     tlm.stopMonitoring();
+ #endif
+ }
+ 
+ /** Record a new set of values.
+-    @ingroup	telemetry
+-    @param	time	current time.
+-    @return	None.
++    @ingroup    telemetry
++    @param  time    current time.
++    @return None.
+  */
+ void RtTelemUpdate(double time)
+ {
+-#if 0
++#if 1
+     tlm.update(time);
+ #endif
+ }
+ 
+ /** Deinstall the telemetry module.
+-    @ingroup	telemetry
+-    @return	none.
++    @ingroup    telemetry
++    @return none.
+  */
+ void RtTelemShutdown(void)
+ {
+-#if 0
++#if 1
++    if (!TlmModLoaded) return;
+     tlm.shutdown();
+-    GfModUnloadList(&modlist);
++    // GfModUnloadList(&modlist);
++    TlmModLoaded = false;
+ #endif
+ }
+-
+diff -ruN -x torcsdoc.conf torcs-1.3.6/src/modules/telemetry/telemetry.cpp torcs-1.3.6-new/src/modules/telemetry/telemetry.cpp
+--- torcs-1.3.6/src/modules/telemetry/telemetry.cpp	2012-02-09 14:00:31.000000000 +0000
++++ torcs-1.3.6-new/src/modules/telemetry/telemetry.cpp	2016-02-09 15:12:22.545202799 +0000
+@@ -48,6 +48,7 @@
+ } tTlm;
+     
+ static tTlm	TlmData;
++static bool TlmInitialized = false;
+ 
+ 
+ /*
+@@ -66,11 +67,15 @@
+ void
+ TlmInit(tdble ymin, tdble ymax)
+ {
+-    TlmData.file	= (FILE*)NULL;
+-    TlmData.state	= 0;
+-    TlmData.ymin	= ymin;
+-    TlmData.ymax	= ymax;
+-    TlmData.chanList	= (tChannel*)NULL;
++    if (!TlmInitialized) {
++        TlmData.file	= (FILE*)NULL;
++        TlmData.state	= 0;
++        TlmData.ymin	= ymin;
++        TlmData.ymax	= ymax;
++        TlmData.chanList	= (tChannel*)NULL;
++
++        TlmInitialized = true;
++    }
+ }
+ 
+ 
+@@ -113,6 +118,7 @@
+ void 
+ TlmStartMonitoring(const char *filename)
+ {
++    if (TlmData.state == 1) return;
+     const int BUFSIZE = 1024;
+ 	char	buf[BUFSIZE];
+     FILE	*fout;
+@@ -196,7 +202,8 @@
+ 
+ void 
+ TlmStopMonitoring(void)
+-{
++{   
++    if (TlmData.state == 0) return;
+ 	const int BUFSIZE = 256;
+     char	buf[BUFSIZE];
+     
+@@ -208,13 +215,15 @@
+     GfOut("Telemetry: stop monitoring\n");
+ 
+     snprintf(buf, BUFSIZE, "sh %s", TlmData.cmdfile);
+-    system(buf);
++    // system(buf);
+     free(TlmData.cmdfile);
++
++    TlmInitialized = false;
+ }
+ 
+ /*
+  * Function
+- *	TlmShutdown
++ *	TlmShutdowns
+  *
+  * Description
+  *	release all the channels
+diff -ruN -x torcsdoc.conf torcs-1.3.6/src/raceman/quickrace.xml torcs-1.3.6-new/src/raceman/quickrace.xml
+--- torcs-1.3.6/src/raceman/quickrace.xml	2014-03-19 10:41:00.000000000 +0000
++++ torcs-1.3.6-new/src/raceman/quickrace.xml	2016-02-09 15:29:04.344846709 +0000
+@@ -64,28 +64,19 @@
+ 
+       <section name="1">
+         <attnum name="idx" val="4"/>
+-        <attstr name="module" val="berniw"/>
++        <attstr name="module" val="inferno"/>
+       </section>
+ 
+       <section name="2">
+         <attnum name="idx" val="5"/>
+-        <attstr name="module" val="olethros"/>
++        <attstr name="module" val="inferno"/>
+       </section>
+ 
+       <section name="3">
+         <attnum name="idx" val="6"/>
+-        <attstr name="module" val="lliaw"/>
++        <attstr name="module" val="inferno"/>
+       </section>
+ 
+-      <section name="4">
+-        <attnum name="idx" val="1"/>
+-        <attstr name="module" val="human"/>
+-      </section>
+-
+-      <section name="5">
+-        <attnum name="idx" val="7"/>
+-        <attstr name="module" val="tita"/>
+-      </section>
+     </section>
+ 
+     <section name="Configuration">
