@@ -14,9 +14,9 @@ public class Consumer {
 
     private ConsumerConfigurer configurer;
 
-    public Consumer(String confFilePath) {
+    public Consumer(String confFilePath, int id) {
         configurer = new ConsumerConfigurer(confFilePath);
-        topic = configurer.getTopic();
+        topic = String.format(configurer.getTopic(), id);
         consumer = configureConsumer();
         consumer.subscribe(Arrays.asList(topic));
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -39,7 +39,7 @@ public class Consumer {
             }
             while(iter.hasNext()) {
                 ConsumerRecord<String, String> record = iter.next();
-                System.out.println("Consuming: " + record.toString());
+                System.out.println("Consuming: " + record.toString() + " from " + this.topic);
             }
         }
     }
@@ -67,7 +67,7 @@ public class Consumer {
             return props;
         }
         public String getTopic() {
-            return getTopicName(TOPIC_CARS_ALL);
+            return getTopicName(TOPIC_CARS_SINGLE);
         }
     }
 }

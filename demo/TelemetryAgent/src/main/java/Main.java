@@ -5,6 +5,10 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+
 public class Main {
 
     private final static String LOG_PATH = "/usr/local/share/games/torcs/telemetry/Inferno.dat";
@@ -24,7 +28,7 @@ public class Main {
                 .help("Path to file with properties in java format");
         Namespace res = parser.parseArgsOrFail(args);
         String type = res.get("type");
-        String confFilePath = res.get("conf");
+        final String confFilePath = res.get("conf");
         switch (type) {
             case "producer": {
                 TelemetryProducer TelemetryProducer = new TelemetryProducer(confFilePath, LOG_PATH, READ_TIMEOUT);
@@ -37,8 +41,17 @@ public class Main {
                 break;
             }
             case "consumer": {
-                Consumer consumer = new Consumer(confFilePath);
-                consumer.start();
+                ExecutorService service = Executors.newCachedThreadPool();
+                for(int i = 0; i < 10; i++) {
+                    final int finalI = i;
+                    service.submit(new Runnable() {
+                        public void run() {
+                            Consumer consumer = new Consumer(confFilePath, finalI);
+                            consumer.start();
+                        }
+                    });
+
+                }
                 break;
             }
             default:
