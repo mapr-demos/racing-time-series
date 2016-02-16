@@ -30,6 +30,7 @@ public class Consumer {
     public void start() {
         long pollTimeOut = 1000;
         while(true) {
+            System.out.println(consumer.listTopics());
             ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
 
             Iterator<ConsumerRecord<String, String>> iter = records.iterator();
@@ -62,11 +63,11 @@ public class Consumer {
                     "org.apache.kafka.common.serialization.StringDeserializer");
             props.put("value.deserializer",
                     "org.apache.kafka.common.serialization.StringDeserializer");
-            props.put("enable.auto.commit", "false");
+            props.put("enable.auto.commit", "true");
             return props;
         }
         public String getTopic() {
-            return (String) props.get(TOPIC_CARS_ALL);
+            return getTopicName(TOPIC_CARS_ALL);
         }
     }
 }

@@ -170,7 +170,7 @@ public class TelemetryProducer {
         }
 
         public String getTopic() {
-            return props.getProperty(TOPIC_CARS_ALL);
+            return getTopicName(TOPIC_CARS_ALL);
         }
     }
 }

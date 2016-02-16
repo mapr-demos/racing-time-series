@@ -9,6 +9,7 @@ import java.util.Properties;
  * Utility for loading properties
  */
 public abstract class Configurer {
+  public static final String STREAM_NAME = "stream.name";
   public static final String TOPIC_CARS_ALL = "topic.cars.all";
   public static final String TOPIC_CARS_SINGLE = "topic.cars.single";
 
@@ -52,5 +53,9 @@ public abstract class Configurer {
             "org.apache.kafka.common.serialization.ByteArraySerializer");
     props.put("enable.auto.commit", "true");
     return props;
+  }
+
+  public String getTopicName(String property) {
+    return String.format("%s:%s", props.getProperty(STREAM_NAME), props.getProperty(property));
   }
 }
