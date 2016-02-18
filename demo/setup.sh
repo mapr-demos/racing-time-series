@@ -21,6 +21,9 @@ echo 'deb http://mapr-partner.s3.amazonaws.com/v5.1.0/ubuntu mapr optional' >> /
 
 apt-get update --allow-unauthenticated 
 apt-get install mapr-kafka openjdk-7-jre-headless -y --allow-unauthenticated
+add-apt-repository ppa:webupd8team/java -y
+apt-get update -y
+apt-get install oracle-java8-installer -y
 echo '192.168.42.2 centos7-sn' >> /etc/hosts
 /opt/mapr/server/configure.sh -N cyber.mapr.cluster -c -C centos7-sn:7222 -HS centos7-sn -Z centos7-sn
 useradd mapr -u 5000

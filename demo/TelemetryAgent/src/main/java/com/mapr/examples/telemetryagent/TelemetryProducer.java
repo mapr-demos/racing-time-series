@@ -29,9 +29,9 @@ public class TelemetryProducer {
     private File logFile = null;
     private long readTimeout = 50*1000;
     private long lastKnownPosition = 0;
-    private static int readLineCounter = 0;
+    private long readLineCounter = 0;
 
-    private DataFormatter dataFormatter;
+    private LogsToJSONConverter logsToJSONConverter;
 
     public TelemetryProducer(String pathToProps, String logFilePath, int readTimeout) {
         ProducerConfigurer configurer = new ProducerConfigurer(pathToProps);
@@ -40,11 +40,8 @@ public class TelemetryProducer {
         logFile = new File(logFilePath);
         this.readTimeout = readTimeout;
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                producer.close();
-            }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            producer.close();
         }));
     }
 
@@ -64,8 +61,9 @@ public class TelemetryProducer {
                     String logLine;
 
                     while ((logLine = readWriteFileAccess.readLine()) != null) {
+                        long timestamp = new Date().getTime() / 1000;
                         if (readLineCounter == 0) {  // Reading headers
-                            this.dataFormatter = new DataFormatter(logLine);
+                            this.logsToJSONConverter = new LogsToJSONConverter(logLine, timestamp);
                         } else { // Reading telemetry line
                             sendTelemetryToStream(logLine);
                         }
@@ -92,46 +90,39 @@ public class TelemetryProducer {
         ProducerRecord<Double, byte[]> rec;
         final JSONObject jsonRecord;
         try {
-            jsonRecord = this.dataFormatter.formatJSONRecord(logLine);
+            jsonRecord = this.logsToJSONConverter.formatJSONRecord(logLine);
             System.out.println(jsonRecord.toString());
             rec = new ProducerRecord<>(topic, jsonRecord.toString().getBytes());
-            producer.send(rec, new Callback() {
-                @Override
-                public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-                    if (e != null) {
-                        System.out.println("Exception occurred while sending :(");
-                        System.out.println(e.toString());
-                        return;
-                    }
-                    System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + jsonRecord.toString());
+            producer.send(rec, (recordMetadata, e) -> {
+                if (e != null) {
+                    System.out.println("Exception occurred while sending :(");
+                    System.out.println(e.toString());
+                    return;
                 }
+                System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + jsonRecord.toString());
             });
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private static class DataFormatter {
-        List<String> headers;
-        List<Integer> carNumbers;
+    protected static class LogsToJSONConverter {
+        Set<String> headers;
+        Set<Integer> carNumbers;
+        long timestamp;
 
-        DataFormatter(String headersLine) {
-            this.headers = new ArrayList<>();
-            this.carNumbers = new ArrayList<>();
+        LogsToJSONConverter(String headersLine, long timestamp) {
+            this.timestamp = timestamp;
+            this.headers = new LinkedHashSet<>();
+            this.carNumbers = new LinkedHashSet<>();
             Matcher m = Pattern.compile("(\\w*)(\\d+)")
                     .matcher(headersLine);
             while (m.find()) {
-                addToList(headers, m.group(1));
-                addToList(carNumbers, m.group(2));
+                headers.add(m.group(1));
+                carNumbers.add(Integer.valueOf(m.group(2)));
             }
 
             System.out.println("Data formatter create");
-        }
-
-        private void addToList(List list, String value) {
-            if (!list.contains(value)) {
-                list.add(value);
-            }
         }
 
         public JSONObject formatJSONRecord(String line) throws JSONException {
@@ -141,7 +132,10 @@ public class TelemetryProducer {
             JSONObject jsonTelemetryRecord = new JSONObject();
             JSONArray allCarsJSON = new JSONArray();
 
-            Iterator<List<String>> carsDataIt = Lists.partition(Arrays.asList(Arrays.copyOfRange(splittedLine, 2, splittedLine.length-1)), (splittedLine.length-1)/carNumbers.size()).iterator();
+            List<String> sensorNames = Arrays.asList(Arrays.copyOfRange(splittedLine, 1, splittedLine.length));
+            int sensorsPerCar = getSensorsCount(splittedLine);
+
+            Iterator<List<String>> carsDataIt = Lists.partition(sensorNames, sensorsPerCar).iterator();
             Iterator<Integer> carNumberIt = carNumbers.iterator();
             while (carsDataIt.hasNext() && carNumberIt.hasNext()) {
                 Iterator<String> carDataIt = carsDataIt.next().iterator();
@@ -153,14 +147,23 @@ public class TelemetryProducer {
                 }
 
                 JSONObject carOuterJson = new JSONObject();
-                carOuterJson.put("id", String.valueOf(carNumberIt.next()));
+                carOuterJson.put("id", carNumberIt.next());
                 carOuterJson.put("sensors", carJson);
 
                 allCarsJSON.put(carOuterJson);
             }
-            jsonTelemetryRecord.put("time", time);
+            jsonTelemetryRecord.put("racetime", time);
+            jsonTelemetryRecord.put("timestamp", timestamp);
             jsonTelemetryRecord.put("cars", allCarsJSON);
             return jsonTelemetryRecord;
+        }
+
+        private int getSensorsCount(String[] colNames) {
+            return (colNames.length-1)/ getCarsCount();
+        }
+
+        public int getCarsCount() {
+            return carNumbers.size();
         }
     }
 

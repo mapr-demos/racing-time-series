@@ -51,6 +51,12 @@
             <artifactId>maprdb</artifactId>
             <version>5.1.0-mapr-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
@@ -67,8 +73,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>${sourceJavaVersion}</source>
-                    <target>${targetJavaVersion}</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>

@@ -1,5 +1,5 @@
 import com.mapr.examples.telemetryagent.CarStreamsRouter;
-import com.mapr.examples.telemetryagent.Consumer;
+import com.mapr.examples.telemetryagent.CarStreamConsumer;
 import com.mapr.examples.telemetryagent.TelemetryProducer;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -7,16 +7,19 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.IntStream;
 
+/**
+ * Main class that executes different types of producers and consumers.
+ */
 public class Main {
 
     private final static String LOG_PATH = "/usr/local/share/games/torcs/telemetry/Inferno.dat";
     private final static int READ_TIMEOUT = 1000;
+    public static final int MAX_CARS_COUNT = 10;
 
     public static void main(String[] args) {
-
-        ArgumentParser parser = ArgumentParsers.newArgumentParser("Kafka client")
+        ArgumentParser parser = ArgumentParsers.newArgumentParser("MapR Race Telemetry Example")
                 .defaultHelp(true)
                 .description("Simple Kafka client");
         parser.addArgument("-t", "--type")
@@ -41,18 +44,16 @@ public class Main {
                 break;
             }
             case "consumer": {
-                ExecutorService service = Executors.newCachedThreadPool();
-                for(int i = 0; i < 10; i++) {
-                    final int finalI = i;
-                    service.submit(new Runnable() {
-                        public void run() {
-                            Consumer consumer = new Consumer(confFilePath, finalI);
-                            consumer.start();
-                        }
-                    });
+                ExecutorService service = Executors.newFixedThreadPool(MAX_CARS_COUNT);
+                IntStream.range(1,MAX_CARS_COUNT).forEach((i) ->
+                                    service.submit((Runnable) () -> {
+                                        CarStreamConsumer carStreamConsumer = new CarStreamConsumer(confFilePath, i);
+                                        carStreamConsumer.start();
+                                    }));
 
-                }
-                break;
+//                CarStreamConsumer carStreamConsumer = new CarStreamConsumer(confFilePath, 4);
+//                carStreamConsumer.start();
+
             }
             default:
                 throw new IllegalArgumentException("Wrong client type: " + type);
