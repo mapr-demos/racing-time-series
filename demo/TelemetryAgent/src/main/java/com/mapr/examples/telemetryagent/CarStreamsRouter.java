@@ -55,6 +55,8 @@ public class CarStreamsRouter {
                             System.out.println("Consuming: " + recordValue);
                             decodeAndSend(recordValue);
                         });
+                consumer.commitAsync();
+                System.out.println(">>> " + consumer.committed(consumer.assignment().iterator().next()).offset());
             }
         }
     }

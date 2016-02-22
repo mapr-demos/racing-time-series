@@ -1,31 +1,32 @@
 package com.mapr.examples.telemetryagent;
 
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 
 /**
- * Handler of one car. Receives data from the stream of the car
- * (id passed to the constructor) and saves data to the MapR JSON DB.
- * Each record consists of the timestamp since the race start and
- * sensors data.
+ * Consumer for the stream of events, writes events to the DB
  */
-public class CarStreamConsumer {
+public class EventsStreamConsumer {
+    public static final String RACE_STARTED = "raceStarted";
 
     private KafkaConsumer<String, String> consumer;
     private String topic;
     private ConsumerConfigurer configurer;
     private CarsDAO carsDAO;
 
-    public CarStreamConsumer(String confFilePath, int id) {
+    public EventsStreamConsumer(String confFilePath) {
         configurer = new ConsumerConfigurer(confFilePath);
-        topic = String.format(configurer.getTopic(), id);
+        topic = configurer.getTopic();
         System.out.println(topic);
         consumer = new KafkaConsumer<>(configurer.getKafkaProps());
         consumer.subscribe(Arrays.asList(topic));
-        carsDAO = new CarsDAO(String.format("car%d", id));
+        carsDAO = new CarsDAO();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             consumer.close();
         }));
@@ -41,20 +42,30 @@ public class CarStreamConsumer {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).forEach((record) -> {
                     System.out.println("Consuming: " + record.toString() + " from " + this.topic);
-                    carsDAO.insert(record.value());
+
+                    processEvent(record);
                 });
                 consumer.commitAsync();
             }
         }
     }
 
+    private void processEvent(ConsumerRecord<String, String> record) {
+        switch (record.key()) {
+            case RACE_STARTED:
+                carsDAO.newRace(record.value());
+                break;
+            default:
+                System.err.println("Unknown event " + record.key());
+        }
+    }
 
     private class ConsumerConfigurer extends Configurer {
         public ConsumerConfigurer(String pathToProps) {
             super(pathToProps);
         }
         public String getTopic() {
-            return getTopicName(TOPIC_CARS_SINGLE);
+            return getTopicName(TOPIC_EVENTS);
         }
     }
 }

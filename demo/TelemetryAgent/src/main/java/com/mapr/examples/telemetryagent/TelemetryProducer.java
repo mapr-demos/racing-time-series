@@ -24,6 +24,7 @@ public class TelemetryProducer {
 
     private String topic;
 
+    private ProducerConfigurer configurer;
     private KafkaProducer producer;
 
     private File logFile = null;
@@ -34,9 +35,10 @@ public class TelemetryProducer {
     private LogsToJSONConverter logsToJSONConverter;
 
     public TelemetryProducer(String pathToProps, String logFilePath, int readTimeout) {
-        ProducerConfigurer configurer = new ProducerConfigurer(pathToProps);
+        configurer = new ProducerConfigurer(pathToProps);
         topic = configurer.getTopic();
         producer = new KafkaProducer<>(configurer.getKafkaProps());
+        //TODO: set cursor
         logFile = new File(logFilePath);
         this.readTimeout = readTimeout;
 
@@ -64,6 +66,7 @@ public class TelemetryProducer {
                         long timestamp = new Date().getTime() / 1000;
                         if (readLineCounter == 0) {  // Reading headers
                             this.logsToJSONConverter = new LogsToJSONConverter(logLine, timestamp);
+                            eventRaceStarted(timestamp);
                         } else { // Reading telemetry line
                             sendTelemetryToStream(logLine);
                         }
@@ -86,20 +89,48 @@ public class TelemetryProducer {
         }
     }
 
+    private void eventRaceStarted(long timestamp) {
+        JSONObject event = new JSONObject();
+        try {
+            event.put("timestamp", timestamp);
+            event.put("carsCount", logsToJSONConverter.getCarsCount());
+            event.put("carIds", logsToJSONConverter.getCarNumbers());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        sendEvent(EventsStreamConsumer.RACE_STARTED, event);
+    }
+
+    private void sendEvent(String eventName, JSONObject value) {
+        ProducerRecord<String, byte[]> rec = new ProducerRecord<>(
+                configurer.getTopicName(Configurer.TOPIC_EVENTS),
+                eventName,
+                value.toString().getBytes());
+        producer.send(rec, (recordMetadata, e) -> {
+            if (e != null) {
+                System.err.println("Exception occurred while sending :(");
+                System.err.println(e.toString());
+                return;
+            }
+            System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
+                    " MSG: " + value);
+        });
+    }
+
     private void sendTelemetryToStream(String logLine) {
-        ProducerRecord<Double, byte[]> rec;
-        final JSONObject jsonRecord;
+        ProducerRecord<Void, byte[]> rec;
+        JSONObject jsonRecord;
         try {
             jsonRecord = this.logsToJSONConverter.formatJSONRecord(logLine);
-            System.out.println(jsonRecord.toString());
             rec = new ProducerRecord<>(topic, jsonRecord.toString().getBytes());
             producer.send(rec, (recordMetadata, e) -> {
                 if (e != null) {
-                    System.out.println("Exception occurred while sending :(");
-                    System.out.println(e.toString());
+                    System.err.println("Exception occurred while sending :(");
+                    System.err.println(e.toString());
                     return;
                 }
-                System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + jsonRecord.toString());
+                System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
+                        " MSG: " + jsonRecord.toString());
             });
         } catch (JSONException e) {
             e.printStackTrace();
@@ -108,9 +139,10 @@ public class TelemetryProducer {
 
     protected static class LogsToJSONConverter {
         Set<String> headers;
-        Set<Integer> carNumbers;
-        long timestamp;
 
+        Set<Integer> carNumbers;
+
+        long timestamp;
         LogsToJSONConverter(String headersLine, long timestamp) {
             this.timestamp = timestamp;
             this.headers = new LinkedHashSet<>();
@@ -164,6 +196,10 @@ public class TelemetryProducer {
 
         public int getCarsCount() {
             return carNumbers.size();
+        }
+
+        public Set<Integer> getCarNumbers() {
+            return carNumbers;
         }
     }
 

@@ -27,3 +27,4 @@ apt-get install oracle-java8-installer -y
 echo '192.168.42.2 centos7-sn' >> /etc/hosts
 /opt/mapr/server/configure.sh -N cyber.mapr.cluster -c -C centos7-sn:7222 -HS centos7-sn -Z centos7-sn
 useradd mapr -u 5000
+

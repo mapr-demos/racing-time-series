@@ -12,6 +12,7 @@ public abstract class Configurer {
     public static final String STREAM_NAME = "stream.name";
     public static final String TOPIC_CARS_ALL = "topic.cars.all";
     public static final String TOPIC_CARS_SINGLE = "topic.cars.single";
+    public static final String TOPIC_EVENTS = "topic.events";
 
     protected Properties props;
     public static final String KAFKA_PROPERTY_PREFIX = "kafka";
@@ -51,8 +52,8 @@ public abstract class Configurer {
                 "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.serializer",
                 "org.apache.kafka.common.serialization.ByteArraySerializer");
-        props.put("enable.auto.commit", "true");
-        props.put("auto.offset.reset", "earliest"); // FIXME: switch to "latest" when ready
+        props.put("enable.auto.commit", "false");
+        props.put("auto.offset.reset", "earliest");
         return props;
     }
 

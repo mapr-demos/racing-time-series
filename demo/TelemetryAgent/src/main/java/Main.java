@@ -1,5 +1,6 @@
 import com.mapr.examples.telemetryagent.CarStreamsRouter;
 import com.mapr.examples.telemetryagent.CarStreamConsumer;
+import com.mapr.examples.telemetryagent.EventsStreamConsumer;
 import com.mapr.examples.telemetryagent.TelemetryProducer;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -23,7 +24,7 @@ public class Main {
                 .defaultHelp(true)
                 .description("Simple Kafka client");
         parser.addArgument("-t", "--type")
-                .choices("producer", "consumer", "router")
+                .choices("producer", "consumer", "router", "events")
                 .required(true)
                 .help("Specify client type");
         parser.addArgument("-c", "--conf")
@@ -54,6 +55,11 @@ public class Main {
 //                CarStreamConsumer carStreamConsumer = new CarStreamConsumer(confFilePath, 4);
 //                carStreamConsumer.start();
 
+            }
+            case "events": {
+                EventsStreamConsumer eventsConsumer = new EventsStreamConsumer(confFilePath);
+                eventsConsumer.start();
+                break;
             }
             default:
                 throw new IllegalArgumentException("Wrong client type: " + type);
