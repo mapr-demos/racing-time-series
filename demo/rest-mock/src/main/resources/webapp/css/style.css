@@ -1,0 +1,101 @@
+body {
+font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.graph .axis {
+stroke-width:1;
+}
+
+.graph .axis .tick line {
+stroke:#000;
+}
+
+.graph .axis .tick text {
+fill:#000;
+font-size:.7em;
+}
+
+.graph .axis .domain {
+fill:none;
+stroke:#000;
+}
+
+.graph .group {
+fill:none;
+stroke:#000;
+stroke-width:1.5;
+}
+
+.legend {
+    font-size: 14px;
+    text-anchor: middle;
+} 
+
+.legend:hover {
+    cursor: pointer;
+}
+
+.legend .legend-icon {
+    font-family: FontAwesome;
+    font-size: 14px;
+}
+
+.slidingDiv {
+  height: 430px;
+  padding: 20px;
+    border: 1px solid #000;
+    border-top: none;
+    margin-bottom: 10px;
+}
+
+.show_hide {
+  display: none;
+  border: 1px solid #000;
+  padding: 5px;
+}
+
+.margin-bottom {
+	margin-bottom: 5px;
+}
+
+.arrow {
+  float: right;
+  margin-top: 5px;
+  margin-right: 5px;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #000;
+}
+
+.border-bottom {
+  border-bottom: none !important;
+}
+
+.box_rotate {
+  -webkit-transform: rotate(180deg);
+  /* Chrome, Safari 3.1+ */
+  -moz-transform: rotate(180deg);
+  /* Firefox 3.5-15 */
+  -ms-transform: rotate(180deg);
+  /* IE 9 */
+  -o-transform: rotate(180deg);
+  /* Opera 10.50-12.00 */
+  transform: rotate(180deg);
+  /* Firefox 16+, IE 10+, Opera 12.50+ */
+}
+
+.box_transition {
+  -webkit-transition: all 0.3s ease-out;
+  /* Chrome 1-25, Safari 3.2+ */
+  -moz-transition: all 0.3s ease-out;
+  /* Firefox 4-15 */
+  -o-transition: all 0.3s ease-out;
+  /* Opera 10.50–12.00 */
+  transition: all 0.3s ease-out;
+  /* Chrome 26, Firefox 16+, IE 10+, Opera 12.50+ */
+}

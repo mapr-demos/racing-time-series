@@ -52,11 +52,11 @@ public class CarStreamsRouter {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).map(ConsumerRecord::value)
                         .forEach((recordValue) -> {
-                            System.out.println("Consuming: " + recordValue);
+//                            System.out.println("Consuming: " + recordValue);
                             decodeAndSend(recordValue);
                         });
                 consumer.commitAsync();
-                System.out.println(">>> " + consumer.committed(consumer.assignment().iterator().next()).offset());
+//                System.out.println(">>> " + consumer.committed(consumer.assignment().iterator().next()).offset());
             }
         }
     }
@@ -66,7 +66,7 @@ public class CarStreamsRouter {
             JSONObject record = new JSONObject(recordValue);
             long timestamp = record.getLong("timestamp");
             Double raceTime = record.getDouble("racetime");
-            System.out.println(record);
+//            System.out.println(record);
             JSONArray carsInfo = record.getJSONArray("cars");
             for (int i = 0; i < carsInfo.length(); i++) {
                 JSONObject carInfo = carsInfo.getJSONObject(i);
@@ -81,7 +81,7 @@ public class CarStreamsRouter {
                         System.out.println(e.toString());
                         return;
                     }
-                    System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + carInfo.toString());
+//                    System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + carInfo.toString());
                 });
             }
         } catch (JSONException e) {

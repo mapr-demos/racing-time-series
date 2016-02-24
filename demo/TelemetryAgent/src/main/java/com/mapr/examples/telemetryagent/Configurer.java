@@ -36,9 +36,9 @@ public abstract class Configurer {
                         .substring(KAFKA_PROPERTY_PREFIX.length() + 1), kafkaProperty.getValue()));
         kafkaProps.put("streams.consumer.default.stream", props.get(STREAM_NAME));
 
-        for (Map.Entry<Object, Object> entry : kafkaProps.entrySet()) {
-            System.out.println(String.format("%s = %s", entry.getKey().toString(), entry.getValue().toString()));
-        }
+//        for (Map.Entry<Object, Object> entry : kafkaProps.entrySet()) {
+//            System.out.println(String.format("%s = %s", entry.getKey().toString(), entry.getValue().toString()));
+//        }
         return kafkaProps;
     }
 

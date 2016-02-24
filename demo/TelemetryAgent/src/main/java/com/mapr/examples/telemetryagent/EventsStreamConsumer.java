@@ -23,7 +23,7 @@ public class EventsStreamConsumer {
     public EventsStreamConsumer(String confFilePath) {
         configurer = new ConsumerConfigurer(confFilePath);
         topic = configurer.getTopic();
-        System.out.println(topic);
+//        System.out.println(topic);
         consumer = new KafkaConsumer<>(configurer.getKafkaProps());
         consumer.subscribe(Arrays.asList(topic));
         carsDAO = new CarsDAO();
@@ -41,7 +41,7 @@ public class EventsStreamConsumer {
             } else {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).forEach((record) -> {
-                    System.out.println("Consuming: " + record.toString() + " from " + this.topic);
+//                    System.out.println("Consuming: " + record.toString() + " from " + this.topic);
 
                     processEvent(record);
                 });

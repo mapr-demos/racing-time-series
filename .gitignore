@@ -2,3 +2,8 @@
 *~
 demo/download
 .idea
+.classpath
+.project
+.settings
+*.iml
+target

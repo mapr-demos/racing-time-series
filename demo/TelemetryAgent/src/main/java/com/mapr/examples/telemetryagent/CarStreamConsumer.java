@@ -22,10 +22,10 @@ public class CarStreamConsumer {
     public CarStreamConsumer(String confFilePath, int id) {
         configurer = new ConsumerConfigurer(confFilePath);
         topic = String.format(configurer.getTopic(), id);
-        System.out.println(topic);
+//        System.out.println(topic);
         consumer = new KafkaConsumer<>(configurer.getKafkaProps());
         consumer.subscribe(Arrays.asList(topic));
-        carsDAO = new CarsDAO(String.format("car%d", id));
+        carsDAO = new CarsDAO(id, String.format("car%d", id));
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             consumer.close();
         }));
@@ -36,11 +36,11 @@ public class CarStreamConsumer {
         while(true) {
             ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
             if (records.isEmpty()) {
-                System.out.println("No data arrived...");
+//                System.out.println("No data arrived...");
             } else {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).forEach((record) -> {
-                    System.out.println("Consuming: " + record.toString() + " from " + this.topic);
+//                    System.out.println("Consuming: " + record.toString() + " from " + this.topic);
                     carsDAO.insert(record.value());
                 });
                 consumer.commitAsync();

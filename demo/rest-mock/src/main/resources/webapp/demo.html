@@ -1,0 +1,60 @@
+<html>
+<head>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+
+    <script src="http://code.jquery.com/jquery-2.2.1.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container">
+    <div class="navbar navbar-default">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Telemetry Stream</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/demo.html">History</a></li>
+                <li><a href="#">Real-time</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="plot-wrapper">
+        <div class="show_hide margin-bottom">
+            Fuel
+            <div class="arrow arrow-down"></div>
+        </div>
+        <div class="slidingDiv graph speed-graph"></div>
+    </div>
+    <div class="plot-wrapper">
+        <div class="show_hide margin-bottom">
+            Brake
+            <div class="arrow arrow-down"></div>
+        </div>
+        <div class="slidingDiv graph rpm-graph"></div>
+    </div>
+</div>
+
+</body>
+<script>
+    $(document).ready(function() {
+
+      $(".slidingDiv").hide();
+      $(".show_hide").show();
+      $('.show_hide').click(function() {
+        $(this).next().slideToggle();
+        $(this).toggleClass('border-bottom');
+            $(this).toggleClass('margin-bottom');
+        $(this).find(".arrow").toggleClass('box_rotate box_transition');
+      });
+
+    });
+
+</script>
+<script src="/js/newPlots.js"></script>
+<script src="/js/pollData.js"></script>
+
+</html>

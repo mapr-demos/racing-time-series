@@ -6,6 +6,8 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
@@ -19,7 +21,7 @@ public class Main {
     private final static int READ_TIMEOUT = 1000;
     public static final int MAX_CARS_COUNT = 10;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         ArgumentParser parser = ArgumentParsers.newArgumentParser("MapR Race Telemetry Example")
                 .defaultHelp(true)
                 .description("Simple Kafka client");
@@ -30,6 +32,11 @@ public class Main {
         parser.addArgument("-c", "--conf")
                 .required(true)
                 .help("Path to file with properties in java format");
+        parser.addArgument("-r", "--remove-log")
+                .required(false)
+                .help("Removes log file on start")
+                .setDefault(false)
+                .type(Boolean.class);
         Namespace res = parser.parseArgsOrFail(args);
         String type = res.get("type");
         final String confFilePath = res.get("conf");

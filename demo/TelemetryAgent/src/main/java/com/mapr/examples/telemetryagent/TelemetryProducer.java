@@ -1,6 +1,7 @@
 package com.mapr.examples.telemetryagent;
 
 import com.google.common.collect.Lists;
+import com.mapr.examples.telemetryagent.beans.Race;
 import org.apache.kafka.clients.producer.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,7 +39,6 @@ public class TelemetryProducer {
         configurer = new ProducerConfigurer(pathToProps);
         topic = configurer.getTopic();
         producer = new KafkaProducer<>(configurer.getKafkaProps());
-        //TODO: set cursor
         logFile = new File(logFilePath);
         this.readTimeout = readTimeout;
 
@@ -58,22 +58,28 @@ public class TelemetryProducer {
                 if (fileLength > lastKnownPosition) {
 
                     // Reading and writing file
-                    RandomAccessFile readWriteFileAccess = new RandomAccessFile(logFile, "r");
-                    readWriteFileAccess.seek(lastKnownPosition);
+                    RandomAccessFile readFileAccess = new RandomAccessFile(logFile, "r");
+                    readFileAccess.seek(lastKnownPosition);
                     String logLine;
 
-                    while ((logLine = readWriteFileAccess.readLine()) != null) {
+                    while ((logLine = readFileAccess.readLine()) != null) {
                         long timestamp = new Date().getTime() / 1000;
                         if (readLineCounter == 0) {  // Reading headers
                             this.logsToJSONConverter = new LogsToJSONConverter(logLine, timestamp);
                             eventRaceStarted(timestamp);
                         } else { // Reading telemetry line
-                            sendTelemetryToStream(logLine);
+                            if (readFileAccess.getFilePointer() < fileLength) {
+                                sendTelemetryToStream(logLine);
+                            } else {
+                                // Last line read
+                                lastKnownPosition = readFileAccess.getFilePointer() - logLine.length();
+                                break;
+                            }
                         }
                         readLineCounter++;
                     }
-                    lastKnownPosition = readWriteFileAccess.getFilePointer();
-                    readWriteFileAccess.close();
+//                    lastKnownPosition = readFileAccess.getFilePointer();
+                    readFileAccess.close();
                 } else if (fileLength == lastKnownPosition) {
                     System.out.println("Hmm.. Couldn't found new line after line # " + readLineCounter);
                 } else {
@@ -90,15 +96,11 @@ public class TelemetryProducer {
     }
 
     private void eventRaceStarted(long timestamp) {
-        JSONObject event = new JSONObject();
-        try {
-            event.put("timestamp", timestamp);
-            event.put("carsCount", logsToJSONConverter.getCarsCount());
-            event.put("carIds", logsToJSONConverter.getCarNumbers());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        sendEvent(EventsStreamConsumer.RACE_STARTED, event);
+        Race race = new Race();
+        race.setTimestamp(timestamp);
+        race.setCarsCount(logsToJSONConverter.getCarsCount());
+        race.setCarIds(logsToJSONConverter.getCarNumbers());
+        sendEvent(EventsStreamConsumer.RACE_STARTED, new JSONObject(race));
     }
 
     private void sendEvent(String eventName, JSONObject value) {
@@ -112,8 +114,8 @@ public class TelemetryProducer {
                 System.err.println(e.toString());
                 return;
             }
-            System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
-                    " MSG: " + value);
+//            System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
+//                    " MSG: " + value);
         });
     }
 
@@ -129,8 +131,8 @@ public class TelemetryProducer {
                     System.err.println(e.toString());
                     return;
                 }
-                System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
-                        " MSG: " + jsonRecord.toString());
+//                System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
+//                        " MSG: " + jsonRecord.toString());
             });
         } catch (JSONException e) {
             e.printStackTrace();
