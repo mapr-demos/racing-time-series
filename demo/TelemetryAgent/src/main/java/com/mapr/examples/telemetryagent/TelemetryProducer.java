@@ -2,14 +2,13 @@ package com.mapr.examples.telemetryagent;
 
 import com.google.common.collect.Lists;
 import com.mapr.examples.telemetryagent.beans.Race;
+import com.mapr.examples.telemetryagent.util.Batcher;
 import org.apache.kafka.clients.producer.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,10 +22,11 @@ import java.util.regex.Pattern;
  */
 public class TelemetryProducer {
 
+    public static final String TMP_TELEMETRY_POINTER_FILE = "/tmp/telemetryPointer";
     private String topic;
 
     private ProducerConfigurer configurer;
-    private KafkaProducer producer;
+    private KafkaProducer<String, byte[]> producer;
 
     private File logFile = null;
     private long readTimeout = 50*1000;
@@ -51,11 +51,13 @@ public class TelemetryProducer {
 
         try {
             // Continuously read tail of log file and send to the stream
+            long fileLength = logFile.length();
+            lastKnownPosition = loadPointer(fileLength);
             while (true) {
                 Thread.sleep(readTimeout);
 
-                long fileLength = logFile.length();
-                if (fileLength > lastKnownPosition) {
+                fileLength = logFile.length();
+                if (logFile.exists() && fileLength > lastKnownPosition) {
 
                     // Reading and writing file
                     RandomAccessFile readFileAccess = new RandomAccessFile(logFile, "r");
@@ -68,7 +70,8 @@ public class TelemetryProducer {
                             this.logsToJSONConverter = new LogsToJSONConverter(logLine, timestamp);
                             eventRaceStarted(timestamp);
                         } else { // Reading telemetry line
-                            if (readFileAccess.getFilePointer() < fileLength) {
+//                            System.out.println("!! " + readFileAccess.getFilePointer() + "; " + fileLength);
+                            if (readFileAccess.getFilePointer() < fileLength - 1) {
                                 sendTelemetryToStream(logLine);
                             } else {
                                 // Last line read
@@ -80,7 +83,8 @@ public class TelemetryProducer {
                     }
 //                    lastKnownPosition = readFileAccess.getFilePointer();
                     readFileAccess.close();
-                } else if (fileLength == lastKnownPosition) {
+                    persistPointer(fileLength, lastKnownPosition, readLineCounter);
+                } else if (lastKnownPosition > 0 && fileLength == lastKnownPosition) {
                     System.out.println("Hmm.. Couldn't found new line after line # " + readLineCounter);
                 } else {
                     // File was overwritten
@@ -95,11 +99,48 @@ public class TelemetryProducer {
         }
     }
 
+    private void persistPointer(long fileSize, long lastKnownPosition, long readLineCounter) {
+        try {
+            PrintWriter writer = new PrintWriter(TMP_TELEMETRY_POINTER_FILE, "UTF-8");
+            writer.println(fileSize);
+            writer.println(lastKnownPosition);
+            writer.println(readLineCounter);
+            writer.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            System.err.println("Error during persisting the telemetry pointer");
+            e.printStackTrace();
+        }
+    }
+
+    private long loadPointer(long fileSize) {
+        long pointer = 0;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(TMP_TELEMETRY_POINTER_FILE));
+            long originalFileSize = Long.parseLong(reader.readLine());
+            if (originalFileSize == fileSize) {
+                pointer = Long.parseLong(reader.readLine());
+                readLineCounter = Long.parseLong(reader.readLine());
+            }
+            reader.close();
+        } catch (IOException e) {
+            System.err.println("Telemetry log was changed, reading from beginning");
+        }
+        return pointer;
+    }
+
     private void eventRaceStarted(long timestamp) {
         Race race = new Race();
         race.setTimestamp(timestamp);
         race.setCarsCount(logsToJSONConverter.getCarsCount());
-        race.setCarIds(logsToJSONConverter.getCarNumbers());
+        race.setCarIds(new ArrayList<>());
+        JSONObject raceJson = new JSONObject(race);
+        logsToJSONConverter.getCarNumbers().forEach(carId -> {
+            try {
+                raceJson.append("carIds", carId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
         sendEvent(EventsStreamConsumer.RACE_STARTED, new JSONObject(race));
     }
 
@@ -108,36 +149,38 @@ public class TelemetryProducer {
                 configurer.getTopicName(Configurer.TOPIC_EVENTS),
                 eventName,
                 value.toString().getBytes());
+        System.out.println(">> Event " + eventName + ": " + value.toString());
         producer.send(rec, (recordMetadata, e) -> {
             if (e != null) {
                 System.err.println("Exception occurred while sending :(");
                 System.err.println(e.toString());
                 return;
             }
-//            System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
-//                    " MSG: " + value);
         });
     }
 
     private void sendTelemetryToStream(String logLine) {
-        ProducerRecord<Void, byte[]> rec;
         JSONObject jsonRecord;
         try {
             jsonRecord = this.logsToJSONConverter.formatJSONRecord(logLine);
-            rec = new ProducerRecord<>(topic, jsonRecord.toString().getBytes());
-            producer.send(rec, (recordMetadata, e) -> {
-                if (e != null) {
-                    System.err.println("Exception occurred while sending :(");
-                    System.err.println(e.toString());
-                    return;
-                }
-//                System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() +
-//                        " MSG: " + jsonRecord.toString());
-            });
+            telemetryBatch.add(jsonRecord);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
+    private Batcher<JSONObject> telemetryBatch = new Batcher<>("prod", (batch) -> {
+        ProducerRecord<String, byte[]> rec;
+        JSONArray array = new JSONArray(batch);
+        rec = new ProducerRecord<>(topic, array.toString().getBytes());
+        producer.send(rec, (recordMetadata, e) -> {
+            if (e != null) {
+                System.err.println("Exception occurred while sending :(");
+                System.err.println(e.toString());
+                return;
+            }
+        });
+    });
 
     protected static class LogsToJSONConverter {
         Set<String> headers;

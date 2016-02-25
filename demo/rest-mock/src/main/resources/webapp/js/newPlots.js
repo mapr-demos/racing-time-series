@@ -15,6 +15,7 @@ var checkedLegendIcon = '\uf14a';
 var uncheckedLegendIcon = '\uf096';
 
 var color = d3.scale.category10();
+window.realTime=false;
 
 function PlotCarsTelemetryValueByTime(name, telemetryParameter, elBindTo, yAxisLabel) {
 	this.name = name;

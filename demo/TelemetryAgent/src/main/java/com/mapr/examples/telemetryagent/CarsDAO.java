@@ -4,9 +4,11 @@ package com.mapr.examples.telemetryagent;
 import com.google.common.collect.Lists;
 import com.mapr.db.MapRDB;
 import com.mapr.db.Table;
+import com.mapr.db.rowcol.DBList;
 import com.mapr.examples.telemetryagent.beans.TelemetryData;
 import com.mapr.examples.telemetryagent.beans.TelemetryRecord;
 import com.mapr.examples.telemetryagent.beans.Race;
+import com.mapr.examples.telemetryagent.util.Batcher;
 import com.mapr.examples.telemetryagent.util.NoRacesException;
 import org.apache.commons.beanutils.BeanUtils;
 import org.ojai.Document;
@@ -14,10 +16,7 @@ import org.ojai.store.QueryCondition;
 import org.ojai.store.exceptions.DocumentNotFoundException;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -82,15 +81,42 @@ public class CarsDAO {
         racesTable.flush();
     }
 
+    private Batcher<String> batchJSON = new Batcher<>(String.valueOf(id),
+            (batch) -> {
+                List<Document> records = new ArrayList<>();
+                for (String recordValueJson : batch) {
+                    records.add(MapRDB.newDocument(recordValueJson));
+                }
+                Document document = MapRDB.newDocument();
+                document.setArray("records", records);
+                records.sort((d1, d2) -> ((Double)d1.getDouble("racetime")).compareTo(d2.getDouble("racetime")));
+
+                double currentTimestamp = records.get(0).getDouble("timestamp");
+
+                List<Document> recordsOfSingleRace = new ArrayList<>();
+                for (Document record : records) {
+                    //Don't include old
+                    if (record.getDouble("timestamp") == currentTimestamp) {
+                        recordsOfSingleRace.add(record);
+                    }
+                }
+
+                document.set("timestamp", currentTimestamp);
+                document.set("racetime", records.get(0).getDouble("racetime"));
+                telemetryTable.insert(UUID.randomUUID().toString(), document);
+                telemetryTable.flush();
+            });
+
     public void insert(String recordValueJson) {
         if (telemetryTable == null) {
             throw new RuntimeException("carName was not specified in constructor");
         }
+        batchJSON.add(recordValueJson);
 //        System.out.println(">> recordValueJson " + recordValueJson);
-        Document document = MapRDB.newDocument(recordValueJson);
-        telemetryTable.insert(UUID.randomUUID().toString(), document);
+//        Document document = MapRDB.newDocument(recordValueJson);
+//        telemetryTable.insert(UUID.randomUUID().toString(), document);
 //        System.out.println(">> inserted " + recordValueJson);
-        telemetryTable.flush();
+//        telemetryTable.flush();
 //        System.out.println(">> flushed " + recordValueJson);
 
 //        telemetryTable.find().iterator().forEachRemaining(new Consumer<Document>() {
@@ -142,7 +168,7 @@ public class CarsDAO {
                 .sorted(
                         (d1, d2) -> ((Double)d1.getDouble("racetime")).compareTo(d2.getDouble("racetime"))
                 )
-                .map((o) -> (documentToRecord(o)));
+                .flatMap((o) -> (documentToRecords(o).stream()));
         return sortedValues;
 //        return null;
     }
@@ -151,7 +177,14 @@ public class CarsDAO {
         Race race = new Race();
 //        System.out.println("document to race: " + doc.asMap());
         try {
+            List<Object> carIds = doc.getList("carIds");
+            doc.delete("carIds");
             BeanUtils.populate(race, doc.asMap());
+            List<Integer> carIdsInt = new LinkedList<>();
+            for (Object carId : carIds) {
+                carIdsInt.add((Integer)carId);
+            }
+            race.setCarIds(carIdsInt);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalArgumentException("Can not convert race document");
         }
@@ -181,6 +214,16 @@ public class CarsDAO {
             throw new IllegalArgumentException("Can not convert record document");
         }
         return record;
+    }
+
+    private static List<TelemetryRecord> documentToRecords(Document doc) {
+        List<TelemetryRecord> convertedRecords = new LinkedList<>();
+        DBList records = (DBList) doc.getList("records").get(0);
+        for (Object obj : records) {
+            convertedRecords.add(documentToRecord( (Document)obj) );
+        }
+        convertedRecords.sort((o1, o2) -> ((Double)o1.getRacetime()).compareTo(o2.getRacetime()));
+        return convertedRecords;
     }
 
     public int getId() {

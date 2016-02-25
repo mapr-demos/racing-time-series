@@ -1,5 +1,6 @@
 package com.mapr.examples.telemetryagent;
 
+import com.mapr.examples.telemetryagent.util.Batcher;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -23,7 +24,7 @@ import static java.lang.String.*;
 public class CarStreamsRouter {
     private KafkaConsumer<String, String> consumer;
     private String writeTopic;
-    private KafkaProducer producer;
+    private KafkaProducer<String, byte[]> producer;
 
     public CarStreamsRouter(String confFilePath) {
         //CarStreamConsumer
@@ -62,8 +63,45 @@ public class CarStreamsRouter {
     }
 
     private void decodeAndSend(String recordValue) {
+        JSONArray records = null;
         try {
-            JSONObject record = new JSONObject(recordValue);
+            records = new JSONArray(recordValue);
+            for (int i = 0; i < records.length(); i++) {
+                decodeSingleRecordAndSend((JSONObject) records.get(i));
+            }
+        } catch (JSONException e) {
+            System.err.println("Error during processing records " + recordValue);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Key is the car topic
+     */
+    private Map<String, Batcher<JSONObject>> telemetryBatchers = new HashMap<>();
+    private Batcher<JSONObject> getBatcher(String topic) {
+        if (!telemetryBatchers.containsKey(topic)) {
+
+            Batcher<JSONObject> batcher = new Batcher<>(topic, (batch) -> {
+                JSONArray array = new JSONArray(batch);
+                ProducerRecord<String, byte[]> rec = new ProducerRecord<>(topic, array.toString().getBytes());
+                producer.send(rec, (recordMetadata, e) -> {
+                    if (e != null) {
+                        System.out.println("Exception occurred while sending :(");
+                        System.out.println(e.toString());
+                        return;
+                    }
+//                    System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + carInfo.toString());
+                });
+            });
+
+            telemetryBatchers.put(topic, batcher);
+        }
+        return telemetryBatchers.get(topic);
+    }
+
+    private void decodeSingleRecordAndSend(JSONObject record) {
+        try {
             long timestamp = record.getLong("timestamp");
             Double raceTime = record.getDouble("racetime");
 //            System.out.println(record);
@@ -74,18 +112,11 @@ public class CarStreamsRouter {
                 carInfo.put("timestamp", timestamp);
                 Integer carId = carInfo.getInt("id");
                 carInfo.remove("id");
-                ProducerRecord<Object, byte[]> rec = new ProducerRecord<>(format(writeTopic, carId), carInfo.toString().getBytes());
-                producer.send(rec, (recordMetadata, e) -> {
-                    if (e != null) {
-                        System.out.println("Exception occurred while sending :(");
-                        System.out.println(e.toString());
-                        return;
-                    }
-//                    System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + carInfo.toString());
-                });
+
+                getBatcher(format(writeTopic, carId)).add(carInfo);
             }
         } catch (JSONException e) {
-            System.out.println("Error during processing record " + recordValue);
+            System.out.println("Error during processing record " + record.toString());
             e.printStackTrace();
         }
     }

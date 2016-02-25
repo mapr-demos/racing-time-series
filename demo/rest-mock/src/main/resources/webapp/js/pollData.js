@@ -13,7 +13,7 @@ function pollData(callback) {
 						callback();
 					}
 				}	
-				setTimeout(pollData, 500);
+				setTimeout(pollData, 200);
 			});
 }
 
@@ -55,9 +55,14 @@ function mapTelemertyNew(telemerty) {
 				}
 			});
 			// update latest timestamp
-			latestTimestamp = timestampItem.time > latestTimestamp ? timestampItem.time : latestTimestamp;
+//			if (timestampItem.time < latestTimestamp) {
+//                window.newData = [];
+//                window.latestTimestamp = 0;
+//			} else {
+			    latestTimestamp = timestampItem.time > latestTimestamp ? timestampItem.time : latestTimestamp;
+//			}
 		});
 	}
 }
 
-pollData(window.initGraphCallback);
+pollData(window.initGraphCallback, window.realTime);

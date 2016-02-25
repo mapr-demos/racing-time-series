@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 public class Main {
 
     private final static String LOG_PATH = "/usr/local/share/games/torcs/telemetry/Inferno.dat";
-    private final static int READ_TIMEOUT = 1000;
+    private final static int READ_TIMEOUT = 200;
     public static final int MAX_CARS_COUNT = 10;
 
     public static void main(String[] args) throws IOException {

@@ -1,6 +1,9 @@
 package com.mapr.examples.telemetryagent;
 
 import org.apache.kafka.clients.consumer.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.*;
 import java.util.stream.StreamSupport;
@@ -41,7 +44,15 @@ public class CarStreamConsumer {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).forEach((record) -> {
 //                    System.out.println("Consuming: " + record.toString() + " from " + this.topic);
-                    carsDAO.insert(record.value());
+                    try {
+                        JSONArray array = new JSONArray(record.value());
+                        for (int i = 0; i < array.length(); i++) {
+                            carsDAO.insert(array.get(i).toString());
+                        }
+                    } catch (JSONException e) {
+                        System.out.println("Error processing records " + record.value());
+                        e.printStackTrace();
+                    }
                 });
                 consumer.commitAsync();
             }
