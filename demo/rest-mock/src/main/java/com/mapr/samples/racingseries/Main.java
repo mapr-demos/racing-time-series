@@ -2,6 +2,7 @@ package com.mapr.samples.racingseries;
 
 import com.mapr.examples.telemetryagent.CarsDAO;
 import com.mapr.examples.telemetryagent.util.NoRacesException;
+import com.mapr.samples.racingseries.api.RealTimeApi;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -42,6 +43,8 @@ public class Main {
 
         ServletContextHandler sch = new ServletContextHandler();
         sch.addServlet(sh, "/*");
+        sch.addServlet(new ServletHolder(new RealTimeApi()), "/talk");
+
 
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{resourceHandler, sch});
