@@ -1,23 +1,19 @@
 #!/bin/bash
-if [ `id -u` -ne 5000 ]; then
-	echo "Should be executed as mapr user"
-	exit 1
-fi
-
 trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
 
-echo Starting producer...
-./run-stream-agent.sh producer -r true &
+rm -f /usr/local/share/games/torcs/telemetry/Inferno.dat
 
-echo Starting router...
-./run-stream-agent.sh router &
-
-echo Starting events...
-./run-stream-agent.sh events &
-
-echo Starting consumer...
-./run-stream-agent.sh consumer &
-
+xterm -hold -e "cd /vagrant; sudo -u mapr bash ./run-streams.sh" &
+xterm -hold -e "cd /vagrant; sudo -u mapr bash ./run-ui.sh" &
+sleep 3
+while ! sudo netstat -npl | grep 8080 2>&1 1>/dev/null; do
+	sleep 1
+	echo "Waiting for web server to start..."
+done
+firefox 127.0.0.1:8080/demo.html &
+sleep 1
+torcs &
+wmctrl -r "/usr/local/lib/torcs/torcs-bin" -b add,above
 
 echo Started jobs:
 jobs -pr

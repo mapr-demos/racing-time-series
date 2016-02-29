@@ -23,7 +23,6 @@ public class EventsStreamConsumer {
     public EventsStreamConsumer(String confFilePath) {
         configurer = new ConsumerConfigurer(confFilePath);
         topic = configurer.getTopic();
-//        System.out.println(topic);
         consumer = new KafkaConsumer<>(configurer.getKafkaProps());
         consumer.subscribe(Arrays.asList(topic));
         carsDAO = new CarsDAO();
@@ -33,19 +32,13 @@ public class EventsStreamConsumer {
     }
 
     public void start() {
-        long pollTimeOut = 1000;
+        long pollTimeOut = 100;
         while(true) {
             ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
-            if (records.isEmpty()) {
-                System.out.println("No data arrived...");
-            } else {
+            if (!records.isEmpty()) {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
-                StreamSupport.stream(iterable.spliterator(), false).forEach((record) -> {
-//                    System.out.println("Consuming: " + record.toString() + " from " + this.topic);
-
-                    processEvent(record);
-                });
-                consumer.commitAsync();
+                StreamSupport.stream(iterable.spliterator(), false).forEach(this::processEvent);
+                consumer.commitSync();
             }
         }
     }
@@ -53,6 +46,7 @@ public class EventsStreamConsumer {
     private void processEvent(ConsumerRecord<String, String> record) {
         switch (record.key()) {
             case RACE_STARTED:
+                System.out.println(">> RACE_START event stored");
                 carsDAO.newRace(record.value());
                 break;
             default:

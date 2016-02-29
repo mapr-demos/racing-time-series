@@ -81,14 +81,12 @@ public class CarsDAO {
         racesTable.flush();
     }
 
-    private Batcher<String> batchJSON = new Batcher<>(String.valueOf(id),
+    private Batcher<String> batchJSON = new Batcher<>(String.valueOf(id), 50, // 15 records is about 1 second
             (batch) -> {
                 List<Document> records = new ArrayList<>();
                 for (String recordValueJson : batch) {
                     records.add(MapRDB.newDocument(recordValueJson));
                 }
-                Document document = MapRDB.newDocument();
-                document.setArray("records", records);
                 records.sort((d1, d2) -> ((Double)d1.getDouble("racetime")).compareTo(d2.getDouble("racetime")));
 
                 double currentTimestamp = records.get(0).getDouble("timestamp");
@@ -101,6 +99,9 @@ public class CarsDAO {
                     }
                 }
 
+                Document document = MapRDB.newDocument();
+                document.setArray("records", recordsOfSingleRace);
+
                 document.set("timestamp", currentTimestamp);
                 document.set("racetime", records.get(0).getDouble("racetime"));
                 telemetryTable.insert(UUID.randomUUID().toString(), document);
@@ -112,19 +113,6 @@ public class CarsDAO {
             throw new RuntimeException("carName was not specified in constructor");
         }
         batchJSON.add(recordValueJson);
-//        System.out.println(">> recordValueJson " + recordValueJson);
-//        Document document = MapRDB.newDocument(recordValueJson);
-//        telemetryTable.insert(UUID.randomUUID().toString(), document);
-//        System.out.println(">> inserted " + recordValueJson);
-//        telemetryTable.flush();
-//        System.out.println(">> flushed " + recordValueJson);
-
-//        telemetryTable.find().iterator().forEachRemaining(new Consumer<Document>() {
-//            @Override
-//            public void accept(Document entries) {
-//                System.out.println(">> " + entries.asJsonString());
-//            }
-//        });
     }
 
     /**
@@ -165,24 +153,19 @@ public class CarsDAO {
                 .build();
         Stream<TelemetryRecord> sortedValues =
                 StreamSupport.stream(telemetryTable.find(raceValues).spliterator(), false)
-                .sorted(
-                        (d1, d2) -> ((Double)d1.getDouble("racetime")).compareTo(d2.getDouble("racetime"))
-                )
                 .flatMap((o) -> (documentToRecords(o).stream()));
         return sortedValues;
-//        return null;
     }
 
     private static Race documentToRace(Document doc) {
         Race race = new Race();
-//        System.out.println("document to race: " + doc.asMap());
         try {
             List<Object> carIds = doc.getList("carIds");
             doc.delete("carIds");
             BeanUtils.populate(race, doc.asMap());
             List<Integer> carIdsInt = new LinkedList<>();
             for (Object carId : carIds) {
-                carIdsInt.add((Integer)carId);
+                carIdsInt.add(((Double) carId).intValue());
             }
             race.setCarIds(carIdsInt);
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -222,7 +205,6 @@ public class CarsDAO {
         for (Object obj : records) {
             convertedRecords.add(documentToRecord( (Document)obj) );
         }
-        convertedRecords.sort((o1, o2) -> ((Double)o1.getRacetime()).compareTo(o2.getRacetime()));
         return convertedRecords;
     }
 

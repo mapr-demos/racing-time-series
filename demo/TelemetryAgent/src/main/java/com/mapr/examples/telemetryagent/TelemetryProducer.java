@@ -132,16 +132,18 @@ public class TelemetryProducer {
         Race race = new Race();
         race.setTimestamp(timestamp);
         race.setCarsCount(logsToJSONConverter.getCarsCount());
-        race.setCarIds(new ArrayList<>());
+
         JSONObject raceJson = new JSONObject(race);
-        logsToJSONConverter.getCarNumbers().forEach(carId -> {
-            try {
-                raceJson.append("carIds", carId);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        });
-        sendEvent(EventsStreamConsumer.RACE_STARTED, new JSONObject(race));
+        race.setCarIds(new ArrayList<>());
+
+        JSONArray carIds = new JSONArray();
+        logsToJSONConverter.getCarNumbers().forEach(carIds::put);
+        try {
+            raceJson.put("carIds", carIds);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        sendEvent(EventsStreamConsumer.RACE_STARTED, raceJson);
     }
 
     private void sendEvent(String eventName, JSONObject value) {
@@ -169,7 +171,7 @@ public class TelemetryProducer {
         }
     }
 
-    private Batcher<JSONObject> telemetryBatch = new Batcher<>("prod", (batch) -> {
+    private Batcher<JSONObject> telemetryBatch = new Batcher<>("prod", 50, (batch) -> {
         ProducerRecord<String, byte[]> rec;
         JSONArray array = new JSONArray(batch);
         rec = new ProducerRecord<>(topic, array.toString().getBytes());

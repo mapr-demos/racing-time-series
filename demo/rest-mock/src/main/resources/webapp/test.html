@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+</head>
+<body>
+<input type="button" id="stopButton" value="Stop Listening"/>
+<hr/>
+<div id="content"></div>
+<script>
+ var source = new EventSource('/talk');
+ source.addEventListener('open', function(e) {
+ document.getElementById('content').innerHTML += 'Connections to the server established..<br/>';
+ }, false);
+ source.onmessage = function(e) {
+ document.getElementById('content').innerHTML += e.data + '<br/>';
+ };
+ document.getElementById('stopButton').onclick=function(){
+ document.getElementById('content').innerHTML += 'Listening to server events stopped..<br/>';
+ source.close();
+ }
+
+</script>
+</body>
+</html>

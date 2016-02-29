@@ -1,5 +1,5 @@
 apt-get update
-apt-get install -y ca-certificates build-essential libxmu-dev libxmu6 libxi-dev libxine-dev libalut-dev freeglut3 freeglut3-dev cmake libogg-dev libvorbis-dev libxxf86dga-dev libxxf86vm-dev libxrender-dev libxrandr-dev zlib1g-dev libpng12-dev libplib-dev
+apt-get install -y ca-certificates build-essential libxmu-dev libxmu6 libxi-dev libxine-dev libalut-dev freeglut3 freeglut3-dev cmake libogg-dev libvorbis-dev libxxf86dga-dev libxxf86vm-dev libxrender-dev libxrandr-dev zlib1g-dev libpng12-dev libplib-dev wmctrl
 
 cd /vagrant
 wget -nc http://sourceforge.net/projects/torcs/files/all-in-one/1.3.6/torcs-1.3.6.tar.bz2/download
@@ -28,3 +28,18 @@ echo '192.168.42.2 centos7-sn' >> /etc/hosts
 /opt/mapr/server/configure.sh -N cyber.mapr.cluster -c -C centos7-sn:7222 -HS centos7-sn -Z centos7-sn
 useradd mapr -u 5000
 
+
+cat > ~/Desktop/Streams-Demo.desktop << EOF
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=true
+Exec=/vagrant/run.sh
+Name=Streams Demo
+Comment=executes the streams demo
+Icon=/usr/share/icons/gnome/48x48/status/starred.png
+EOF
+
+chmod +x ~/Desktop/Streams-Demo.desktop

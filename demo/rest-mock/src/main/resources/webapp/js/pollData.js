@@ -1,5 +1,6 @@
 window.newData = [];
 window.latestTimestamp = 0;
+window.raceId = 0;
 
 function pollData(callback) {
 	d3.json('/telemetry/metrics?offset=' + latestTimestamp,
@@ -34,6 +35,11 @@ function getTimestapsForCar(carId) {
 }
 
 function mapTelemertyNew(telemerty) {
+    if (telemerty && telemerty.raceId != window.raceId) {
+        window.latestTimestamp = 0; // new race started
+        window.newData = [];
+        window.raceId = telemerty.raceId;
+    }
 	if (telemerty && telemerty.timestamps) {
 		telemerty.timestamps.forEach(function(timestampItem) {
 			timestampItem.cars.forEach(function(carSensors) {
@@ -55,12 +61,7 @@ function mapTelemertyNew(telemerty) {
 				}
 			});
 			// update latest timestamp
-//			if (timestampItem.time < latestTimestamp) {
-//                window.newData = [];
-//                window.latestTimestamp = 0;
-//			} else {
-			    latestTimestamp = timestampItem.time > latestTimestamp ? timestampItem.time : latestTimestamp;
-//			}
+    	    latestTimestamp = timestampItem.time > latestTimestamp ? timestampItem.time : latestTimestamp;
 		});
 	}
 }

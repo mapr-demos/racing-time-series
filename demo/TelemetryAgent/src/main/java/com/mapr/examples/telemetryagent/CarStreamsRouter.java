@@ -82,7 +82,7 @@ public class CarStreamsRouter {
     private Batcher<JSONObject> getBatcher(String topic) {
         if (!telemetryBatchers.containsKey(topic)) {
 
-            Batcher<JSONObject> batcher = new Batcher<>(topic, (batch) -> {
+            Batcher<JSONObject> batcher = new Batcher<>(topic, 50, (batch) -> {
                 JSONArray array = new JSONArray(batch);
                 ProducerRecord<String, byte[]> rec = new ProducerRecord<>(topic, array.toString().getBytes());
                 producer.send(rec, (recordMetadata, e) -> {
