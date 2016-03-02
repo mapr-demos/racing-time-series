@@ -93,17 +93,11 @@ public class CarStreamsRouter {
         return telemetryBatchers.get(topic);
     }
 
-    private double old;
+//    private double old;
     private void decodeSingleRecordAndSend(JSONObject record) {
         try {
             long timestamp = record.getLong("timestamp");
             double raceTime = record.getDouble("racetime");
-
-            if (raceTime < old) {
-                System.out.println(">>2 EXTERMINATE " + raceTime +
-                        " < " + old);
-            }
-            old = raceTime;
 
             JSONArray carsInfo = record.getJSONArray("cars");
             for (int i = 0; i < carsInfo.length(); i++) {

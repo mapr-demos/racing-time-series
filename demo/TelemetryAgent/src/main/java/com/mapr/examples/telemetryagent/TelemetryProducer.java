@@ -160,16 +160,16 @@ public class TelemetryProducer {
         });
     }
 
-    private double old;
+//    private double old;
     private void sendTelemetryToStream(String logLine) {
         JSONObject jsonRecord;
         try {
             jsonRecord = this.logsToJSONConverter.formatJSONRecord(logLine);
-            if (jsonRecord.getDouble("racetime") < old) {
-                System.out.println(">>2 EXTERMINATE " + jsonRecord.getDouble("racetime") +
-                        " < " + old);
-            }
-            old = jsonRecord.getDouble("racetime");
+//            if (jsonRecord.getDouble("racetime") < old) {
+//                System.out.println(">>2 EXTERMINATE " + jsonRecord.getDouble("racetime") +
+//                        " < " + old);
+//            }
+//            old = jsonRecord.getDouble("racetime");
             telemetryBatch.add(jsonRecord);
         } catch (JSONException e) {
             e.printStackTrace();

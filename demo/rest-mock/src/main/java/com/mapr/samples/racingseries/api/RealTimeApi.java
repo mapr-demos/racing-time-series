@@ -15,23 +15,17 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RealTimeApi extends EventSourceServlet {
     private static final long serialVersionUID = 1L;
-    private final ScheduledExecutorService scheduler =
-            Executors.newScheduledThreadPool(1);
 
     private LiveConsumer consumer;
     private String CONFIG_PATH = "/vagrant/TelemetryAgent/src/main/resources/live_consumer.conf";
 
     public RealTimeApi() {
         consumer = new LiveConsumer(CONFIG_PATH);
-        scheduler.scheduleWithFixedDelay(consumer, 100, 100, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -71,7 +65,7 @@ public class RealTimeApi extends EventSourceServlet {
         }
 
         private void emitTimestamps(Emitter emitter) throws IOException {
-            final int MAX_SIZE = 10;
+            final int MAX_SIZE = 20;
             List<JSONObject> frozenQueue = new ArrayList<>(MAX_SIZE);
             do {
                 JSONObject obj = timestampsQueue.poll();
