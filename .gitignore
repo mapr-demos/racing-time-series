@@ -7,3 +7,5 @@ demo/download
 .settings
 *.iml
 target
+*.swp
+*.out

@@ -21,41 +21,15 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("/telemetry/metrics")
 public class RacingTelemetryRestApi {
+	private final CarsDAO carsDAO = new CarsDAO();
+	private final List<CarsDAO> carsDAOs = new ArrayList<>();
+
 	public RacingTelemetryRestApi() {
 		for (int i = 0; i < 11; i++) {
 			carsDAOs.add(new CarsDAO(i, String.format("car%d", i)));
 		}
 	}
 
-	private final CarsDAO carsDAO = new CarsDAO();
-	private final List<CarsDAO> carsDAOs = new ArrayList<>();
-
-	private int minValue = 1;
-	private int maxValue = 150;
-
-
-//	@GET
-//	@Produces(APPLICATION_JSON)
-//	public TelemetryTimestampsResponse getData(@QueryParam("offset") Double offset) {
-//		TelemetryTimestampsResponse response = new TelemetryTimestampsResponse();
-//		List<TelemetryTimestamp> timestamps = new ArrayList<>();
-//		if (offset == null) {
-//			offset = 0.0;
-//		}
-//		for (int i = 0; i < ThreadLocalRandom.current().nextInt(1, 5); i++) {
-//			TelemetryTimestamp timestamp = new TelemetryTimestamp();
-//			offset += ThreadLocalRandom.current().nextDouble(0.1, 2);
-//			timestamp.setTime(new Double(offset));
-//			List<CarTelemetryDataPoint> carPoints = new ArrayList<>();
-//			for (int j = 0; j < 4; j++) {
-//				carPoints.add(new CarTelemetryDataPoint(j, simulateTelemetryData(j)));
-//			}
-//			timestamp.setCars(carPoints);
-//			timestamps.add(timestamp);
-//		}
-//		response.setTimestamps(timestamps);
-//		return response;
-//	}
 
 	@GET
 	@Produces(APPLICATION_JSON)
@@ -98,26 +72,5 @@ public class RacingTelemetryRestApi {
 		response.setTimestamps(timestamps);
 		response.setRaceId(race.getTimestamp());
 		return response;
-	}
-
-//	@GET
-//	@Path("test")
-//	public void getTest() {
-//		Table racesTable = MapRDB.getTable("/apps/telemetry/races");
-//		carsDAO.newRace("{\"test\": 1}");
-//		racesTable.find().iterator().forEachRemaining(new Consumer<Document>() {
-//			@Override
-//			public void accept(Document entries) {
-//				System.out.println(entries.asJsonString());
-//			}
-//		});
-//	}
-
-	private double getRandomDouble() {
-		return ThreadLocalRandom.current().nextDouble(minValue, maxValue);
-	}
-
-	private int getRandomInt() {
-		return ThreadLocalRandom.current().nextInt(minValue, maxValue);
 	}
 }

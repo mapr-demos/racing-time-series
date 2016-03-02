@@ -1,6 +1,7 @@
 package com.mapr.examples.telemetryagent.beans;
 
 public class TelemetryRecord {
+    private double carId;
     private long timestamp;
     private double racetime;
     private TelemetryData sensors;
@@ -27,5 +28,13 @@ public class TelemetryRecord {
 
     public void setSensors(TelemetryData sensors) {
         this.sensors = sensors;
+    }
+
+    public double getCarId() {
+        return carId;
+    }
+
+    public void setCarId(double carId) {
+        this.carId = carId;
     }
 }

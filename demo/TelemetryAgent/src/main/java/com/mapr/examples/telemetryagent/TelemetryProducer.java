@@ -65,23 +65,22 @@ public class TelemetryProducer {
                     String logLine;
 
                     while ((logLine = readFileAccess.readLine()) != null) {
+                        if (logLine.length() == 0) continue;
                         long timestamp = new Date().getTime() / 1000;
                         if (readLineCounter == 0) {  // Reading headers
                             this.logsToJSONConverter = new LogsToJSONConverter(logLine, timestamp);
                             eventRaceStarted(timestamp);
                         } else { // Reading telemetry line
-//                            System.out.println("!! " + readFileAccess.getFilePointer() + "; " + fileLength);
                             if (readFileAccess.getFilePointer() < fileLength - 1) {
                                 sendTelemetryToStream(logLine);
                             } else {
                                 // Last line read
-                                lastKnownPosition = readFileAccess.getFilePointer() - logLine.length();
+                                lastKnownPosition = readFileAccess.getFilePointer() - logLine.length() - 1;
                                 break;
                             }
                         }
                         readLineCounter++;
                     }
-//                    lastKnownPosition = readFileAccess.getFilePointer();
                     readFileAccess.close();
                     persistPointer(fileLength, lastKnownPosition, readLineCounter);
                 } else if (lastKnownPosition > 0 && fileLength == lastKnownPosition) {
@@ -161,17 +160,23 @@ public class TelemetryProducer {
         });
     }
 
+    private double old;
     private void sendTelemetryToStream(String logLine) {
         JSONObject jsonRecord;
         try {
             jsonRecord = this.logsToJSONConverter.formatJSONRecord(logLine);
+            if (jsonRecord.getDouble("racetime") < old) {
+                System.out.println(">>2 EXTERMINATE " + jsonRecord.getDouble("racetime") +
+                        " < " + old);
+            }
+            old = jsonRecord.getDouble("racetime");
             telemetryBatch.add(jsonRecord);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private Batcher<JSONObject> telemetryBatch = new Batcher<>("prod", 50, (batch) -> {
+    private Batcher<JSONObject> telemetryBatch = new Batcher<>("prod", 5, (batch) -> {
         ProducerRecord<String, byte[]> rec;
         JSONArray array = new JSONArray(batch);
         rec = new ProducerRecord<>(topic, array.toString().getBytes());
@@ -182,6 +187,7 @@ public class TelemetryProducer {
                 return;
             }
         });
+//        producer.flush();
     });
 
     protected static class LogsToJSONConverter {

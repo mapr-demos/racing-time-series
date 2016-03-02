@@ -157,7 +157,7 @@ public class CarsDAO {
         return sortedValues;
     }
 
-    private static Race documentToRace(Document doc) {
+    public static Race documentToRace(Document doc) {
         Race race = new Race();
         try {
             List<Object> carIds = doc.getList("carIds");
@@ -175,7 +175,7 @@ public class CarsDAO {
         return race;
     }
 
-    private static TelemetryRecord documentToRecord(Document doc) {
+    public static TelemetryRecord documentToRecord(Document doc) {
         TelemetryRecord record = new TelemetryRecord();
         Map<String, Object> map = doc.asMap();
         Map<String, Object> sensors = (Map<String, Object>) map.get("sensors");

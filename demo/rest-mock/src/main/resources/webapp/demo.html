@@ -27,14 +27,14 @@
             Speed
             <div class="arrow arrow-down"></div>
         </div>
-        <div class="slidingDiv graph speed-graph"></div>
+        <div id="speed_chart" class="slidingDiv graph speed-graph"></div>
     </div>
     <div class="plot-wrapper">
         <div class="show_hide margin-bottom">
             RPM
             <div class="arrow arrow-down"></div>
         </div>
-        <div class="slidingDiv graph rpm-graph"></div>
+        <div id="rpm_chart" class="slidingDiv graph rpm-graph"></div>
     </div>
 </div>
 
@@ -45,7 +45,9 @@
       $(".slidingDiv").hide();
       $(".show_hide").show();
       $('.show_hide').click(function() {
+        if (newData.length == 0) return;
         $(this).next().slideToggle();
+        toggleVisibility($(this).next()[0].id);
         $(this).toggleClass('border-bottom');
             $(this).toggleClass('margin-bottom');
         $(this).find(".arrow").toggleClass('box_rotate box_transition');

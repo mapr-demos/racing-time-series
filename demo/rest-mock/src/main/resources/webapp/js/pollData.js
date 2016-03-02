@@ -2,21 +2,39 @@ window.newData = [];
 window.latestTimestamp = 0;
 window.raceId = 0;
 
-function pollData(callback) {
-	d3.json('/telemetry/metrics?offset=' + latestTimestamp,
-			function(error, telemerty) {
-				if(error) {
-					console.log('Error', error);
-					return;
-				} else {								
-				mapTelemertyNew(telemerty);
-					if (callback) {
-						callback();
-					}
-				}	
-				setTimeout(pollData, 200);
-			});
-}
+//function pollData(callback) {
+//	d3.json('/telemetry/metrics?offset=' + latestTimestamp,
+//			function(error, telemerty) {
+//				if(error) {
+//					console.log('Error', error);
+//					return;
+//				} else {
+//				mapTelemertyNew(telemerty);
+//					if (callback) {
+//						callback();
+//					}
+//				}
+//				setTimeout(pollData, 200);
+//			});
+//}
+//
+$(function() {
+    window.initGraphCallback();
+});
+
+var source = new EventSource('/talk');
+source.addEventListener('open', function(e) {
+    console.log('Connected');
+}, false);
+
+source.addEventListener('raceStarted', function(e) {
+    newData = [];
+}, false);
+
+
+source.onmessage = function(e) {
+    mapTelemertyNew(JSON.parse(e.data));
+};
 
 function getTimestapsForCar(carId) {
 	var carTimestamps = newData.filter(function(carTimestamps) {
@@ -37,7 +55,7 @@ function getTimestapsForCar(carId) {
 function mapTelemertyNew(telemerty) {
     if (telemerty && telemerty.raceId != window.raceId) {
         window.latestTimestamp = 0; // new race started
-        window.newData = [];
+        window.newData.splice(0, window.newData.length);
         window.raceId = telemerty.raceId;
     }
 	if (telemerty && telemerty.timestamps) {
@@ -65,5 +83,3 @@ function mapTelemertyNew(telemerty) {
 		});
 	}
 }
-
-pollData(window.initGraphCallback, window.realTime);

@@ -44,26 +44,20 @@ public class CarStreamsRouter {
     }
 
     public void start() {
-        long pollTimeOut = 1000;
+        long pollTimeOut = 100;
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
-            if (records.isEmpty()) {
-                System.out.println("No data arrived...");
-            } else {
+            if (!records.isEmpty()) {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).map(ConsumerRecord::value)
-                        .forEach((recordValue) -> {
-//                            System.out.println("Consuming: " + recordValue);
-                            decodeAndSend(recordValue);
-                        });
+                        .forEach(this::decodeAndSend);
                 consumer.commitAsync();
-//                System.out.println(">>> " + consumer.committed(consumer.assignment().iterator().next()).offset());
             }
         }
     }
 
     private void decodeAndSend(String recordValue) {
-        JSONArray records = null;
+        JSONArray records;
         try {
             records = new JSONArray(recordValue);
             for (int i = 0; i < records.length(); i++) {
@@ -82,7 +76,7 @@ public class CarStreamsRouter {
     private Batcher<JSONObject> getBatcher(String topic) {
         if (!telemetryBatchers.containsKey(topic)) {
 
-            Batcher<JSONObject> batcher = new Batcher<>(topic, 50, (batch) -> {
+            Batcher<JSONObject> batcher = new Batcher<>(topic, 5, (batch) -> {
                 JSONArray array = new JSONArray(batch);
                 ProducerRecord<String, byte[]> rec = new ProducerRecord<>(topic, array.toString().getBytes());
                 producer.send(rec, (recordMetadata, e) -> {
@@ -91,7 +85,6 @@ public class CarStreamsRouter {
                         System.out.println(e.toString());
                         return;
                     }
-//                    System.out.println("Sent: " + recordMetadata.topic() + " # " + recordMetadata.partition() + " MSG: " + carInfo.toString());
                 });
             });
 
@@ -100,11 +93,18 @@ public class CarStreamsRouter {
         return telemetryBatchers.get(topic);
     }
 
+    private double old;
     private void decodeSingleRecordAndSend(JSONObject record) {
         try {
             long timestamp = record.getLong("timestamp");
-            Double raceTime = record.getDouble("racetime");
-//            System.out.println(record);
+            double raceTime = record.getDouble("racetime");
+
+            if (raceTime < old) {
+                System.out.println(">>2 EXTERMINATE " + raceTime +
+                        " < " + old);
+            }
+            old = raceTime;
+
             JSONArray carsInfo = record.getJSONArray("cars");
             for (int i = 0; i < carsInfo.length(); i++) {
                 JSONObject carInfo = carsInfo.getJSONObject(i);
