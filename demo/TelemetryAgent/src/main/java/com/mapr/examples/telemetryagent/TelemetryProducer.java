@@ -68,7 +68,9 @@ public class TelemetryProducer {
                         if (logLine.length() == 0) continue;
                         long timestamp = new Date().getTime() / 1000;
                         if (readLineCounter == 0) {  // Reading headers
-                            this.logsToJSONConverter = new LogsToJSONConverter(logLine, timestamp);
+                            this.logsToJSONConverter =
+                                    new LogsToJSONConverter(logLine, timestamp,
+                                            Arrays.asList("Speed", "RPM", "Distance"));
                             eventRaceStarted(timestamp);
                         } else { // Reading telemetry line
                             if (readFileAccess.getFilePointer() < fileLength - 1) {
@@ -96,6 +98,20 @@ public class TelemetryProducer {
         } finally {
             producer.close();
         }
+    }
+
+    private void warmUp() {
+        final String TEST_MESSAGE = "It's time to rock!";
+        ProducerRecord<String, byte[]> rec;
+        //Events
+        rec = new ProducerRecord<>(configurer.getTopicName(Configurer.TOPIC_EVENTS),
+                "test", TEST_MESSAGE.getBytes());
+        producer.send(rec);
+        //Cars
+        rec = new ProducerRecord<>(topic,
+                "test", TEST_MESSAGE.getBytes());
+        producer.send(rec);
+        producer.flush();
     }
 
     private void persistPointer(long fileSize, long lastKnownPosition, long readLineCounter) {
@@ -160,16 +176,10 @@ public class TelemetryProducer {
         });
     }
 
-//    private double old;
     private void sendTelemetryToStream(String logLine) {
         JSONObject jsonRecord;
         try {
             jsonRecord = this.logsToJSONConverter.formatJSONRecord(logLine);
-//            if (jsonRecord.getDouble("racetime") < old) {
-//                System.out.println(">>2 EXTERMINATE " + jsonRecord.getDouble("racetime") +
-//                        " < " + old);
-//            }
-//            old = jsonRecord.getDouble("racetime");
             telemetryBatch.add(jsonRecord);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -179,6 +189,11 @@ public class TelemetryProducer {
     private Batcher<JSONObject> telemetryBatch = new Batcher<>("prod", 5, (batch) -> {
         ProducerRecord<String, byte[]> rec;
         JSONArray array = new JSONArray(batch);
+        try {
+            System.out.println("P: " + batch.get(0).getDouble("racetime"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         rec = new ProducerRecord<>(topic, array.toString().getBytes());
         producer.send(rec, (recordMetadata, e) -> {
             if (e != null) {
@@ -187,7 +202,6 @@ public class TelemetryProducer {
                 return;
             }
         });
-//        producer.flush();
     });
 
     protected static class LogsToJSONConverter {
@@ -196,8 +210,11 @@ public class TelemetryProducer {
         Set<Integer> carNumbers;
 
         long timestamp;
-        LogsToJSONConverter(String headersLine, long timestamp) {
+        private List<String> storedSensors;
+
+        LogsToJSONConverter(String headersLine, long timestamp, List<String> storedSensors) {
             this.timestamp = timestamp;
+            this.storedSensors = storedSensors;
             this.headers = new LinkedHashSet<>();
             this.carNumbers = new LinkedHashSet<>();
             Matcher m = Pattern.compile("(\\w*)(\\d+)")
@@ -209,7 +226,6 @@ public class TelemetryProducer {
 
             System.out.println("Data formatter create");
         }
-
         public JSONObject formatJSONRecord(String line) throws JSONException {
             String[] splittedLine =  line.split(" ");
             Double time = Double.parseDouble(splittedLine[0]);
@@ -228,7 +244,11 @@ public class TelemetryProducer {
 
                 JSONObject carJson = new JSONObject();
                 while (carDataIt.hasNext() && headersIt.hasNext()) {
-                    carJson.put(headersIt.next(), Double.parseDouble(carDataIt.next()));
+                    String sensorName = headersIt.next();
+                    String val = carDataIt.next();
+                    if (storedSensors.contains(sensorName)) {
+                        carJson.put(sensorName, Double.parseDouble(val));
+                    }
                 }
 
                 JSONObject carOuterJson = new JSONObject();

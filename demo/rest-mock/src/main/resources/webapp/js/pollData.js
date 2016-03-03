@@ -20,6 +20,7 @@ window.raceId = 0;
 //
 $(function() {
     window.initGraphCallback();
+    window.initGraphDistanceCallback();
 });
 
 var source = new EventSource('/talk');
@@ -31,6 +32,9 @@ source.addEventListener('raceStarted', function(e) {
     newData = [];
 }, false);
 
+source.addEventListener('test', function(e) {
+    console.log(e.data);
+}, false);
 
 source.onmessage = function(e) {
     mapTelemertyNew(JSON.parse(e.data));

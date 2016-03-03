@@ -103,7 +103,6 @@
 			<artifactId>maprdb</artifactId>
 			<version>5.1.0-mapr-SNAPSHOT</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>

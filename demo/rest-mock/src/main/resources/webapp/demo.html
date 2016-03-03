@@ -31,11 +31,18 @@
     </div>
     <div class="plot-wrapper">
         <div class="show_hide margin-bottom">
-            RPM
+            Speed
             <div class="arrow arrow-down"></div>
         </div>
-        <div id="rpm_chart" class="slidingDiv graph rpm-graph"></div>
+        <div id="speed_dist_chart" class="slidingDiv graph speed-dist-graph"></div>
     </div>
+    <!--<div class="plot-wrapper">-->
+        <!--<div class="show_hide margin-bottom">-->
+            <!--RPM-->
+            <!--<div class="arrow arrow-down"></div>-->
+        <!--</div>-->
+        <!--<div id="rpm_chart" class="slidingDiv graph rpm-graph"></div>-->
+    <!--</div>-->
 </div>
 
 </body>
@@ -45,7 +52,7 @@
       $(".slidingDiv").hide();
       $(".show_hide").show();
       $('.show_hide').click(function() {
-        if (newData.length == 0) return;
+        //if (newData.length == 0) return;
         $(this).next().slideToggle();
         toggleVisibility($(this).next()[0].id);
         $(this).toggleClass('border-bottom');
@@ -57,6 +64,7 @@
 
 </script>
 <script src="/js/newPlots.js"></script>
+<script src="/js/distPlot.js"></script>
 <script src="/js/pollData.js"></script>
 
 </html>

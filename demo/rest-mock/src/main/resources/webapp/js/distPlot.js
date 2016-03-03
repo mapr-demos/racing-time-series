@@ -12,7 +12,7 @@ var uncheckedLegendIcon = '\uf096';
 
 var color = d3.scale.category10();
 
-function PlotCarsTelemetryValueByTime(name, telemetryParameter, elBindTo,
+function PlotCarsTelemetryValueByDistance(name, telemetryParameter, elBindTo,
     yAxisLabel) {
   this.name = name;
   this.telemetryParameter = telemetryParameter;
@@ -22,7 +22,7 @@ function PlotCarsTelemetryValueByTime(name, telemetryParameter, elBindTo,
   this.init();
 }
 
-PlotCarsTelemetryValueByTime.prototype.rescaleYAxis = function() {
+PlotCarsTelemetryValueByDistance.prototype.rescaleYAxis = function() {
   var hiddenCars = this.hiddenCars;
   var sensorKey = this.telemetryParameter;
   var notHiddenCars = newData.filter(function(item) {
@@ -42,10 +42,10 @@ PlotCarsTelemetryValueByTime.prototype.rescaleYAxis = function() {
   this.y.domain([ 0, maxValue ]);
 }
 
-PlotCarsTelemetryValueByTime.prototype.rescaleXAxis = function() {
+PlotCarsTelemetryValueByDistance.prototype.rescaleXAxis = function() {
   var domainValues = newData.map(function(carTimestamps) {
     return d3.extent(carTimestamps.timestamps, function(sensorsTimestamp) {
-      return sensorsTimestamp.timestamp;
+      return sensorsTimestamp.sensors["distance"];
     });
   });
   var minValue = d3.min(domainValues, function(extent) {
@@ -57,19 +57,19 @@ PlotCarsTelemetryValueByTime.prototype.rescaleXAxis = function() {
   this.x.domain([ minValue, maxValue ]);
 }
 
-PlotCarsTelemetryValueByTime.prototype.carIsVisible = function(carId) {
+PlotCarsTelemetryValueByDistance.prototype.carIsVisible = function(carId) {
   return this.hiddenCars.indexOf(carId) < 0;
 }
 
-PlotCarsTelemetryValueByTime.prototype.getCarPathId = function(carId) {
+PlotCarsTelemetryValueByDistance.prototype.getCarPathId = function(carId) {
   return 'car' + carId;
 }
 
-PlotCarsTelemetryValueByTime.prototype.getLegendItemId = function(carId) {
+PlotCarsTelemetryValueByDistance.prototype.getLegendItemId = function(carId) {
   return this.name + '_legend_' + this.getCarPathId(carId);
 }
 
-PlotCarsTelemetryValueByTime.prototype.init = function() {
+PlotCarsTelemetryValueByDistance.prototype.init = function() {
   var self = this;
   self.x = d3.scale.linear().range([ 0, width ]);
   self.rescaleXAxis();
@@ -77,7 +77,7 @@ PlotCarsTelemetryValueByTime.prototype.init = function() {
   self.y = d3.scale.linear().range([ height, 0 ]);
   self.rescaleYAxis();
   self.line = d3.svg.line().interpolate('linear').x(function(d) {
-    return self.x(d.timestamp);
+    return self.x(d.sensors["distance"]);
   }).y(function(d) {
     return self.y(d.sensors[self.telemetryParameter]);
   });
@@ -115,10 +115,10 @@ PlotCarsTelemetryValueByTime.prototype.init = function() {
   .append("text")
   .attr('class', 'axis-label')
   .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom) + ")")
-  .text("Time, s");
+  .text("Distance, m");
 }
 
-PlotCarsTelemetryValueByTime.prototype.addOrUpdateCarPath = function(carItem) {
+PlotCarsTelemetryValueByDistance.prototype.addOrUpdateCarPath = function(carItem) {
   var self = this;
   if(!self.carIsVisible(carItem.name)) {
     return;
@@ -134,7 +134,7 @@ PlotCarsTelemetryValueByTime.prototype.addOrUpdateCarPath = function(carItem) {
       .attr('id', self.getCarPathId(carItem.name))
       .attr("d", self.line(carItem.timestamps))
       .style('stroke', color(carItem.name));
-      
+
       var currentLegendsCount = d3.selectAll(self.elementBindTo + ' .legend').size();
 
       var legend = self.svg
@@ -172,7 +172,7 @@ PlotCarsTelemetryValueByTime.prototype.addOrUpdateCarPath = function(carItem) {
       .append("tspan")
       .attr('class', 'legend-icon')
       .text(checkedLegendIcon);
-      
+
       legend
       .append("tspan")
       .attr('class', 'legend-car-name')
@@ -182,10 +182,10 @@ PlotCarsTelemetryValueByTime.prototype.addOrUpdateCarPath = function(carItem) {
   } else {
     carPath.attr("d", self.line(carItem.timestamps));
   }
-  
+
 }
 
-PlotCarsTelemetryValueByTime.prototype.refresh = function(callback) {
+PlotCarsTelemetryValueByDistance.prototype.refresh = function(callback) {
   var self = this;
   self.rescaleXAxis();
   self.rescaleYAxis();
@@ -197,19 +197,16 @@ PlotCarsTelemetryValueByTime.prototype.refresh = function(callback) {
       .each('end', callback);
 }
 
-PlotCarsTelemetryValueByTime.prototype.toggleVisibility = function() {
-  this.visible = !this.visible; 
+PlotCarsTelemetryValueByDistance.prototype.toggleVisibility = function() {
+  this.visible = !this.visible;
 }
 
-window.initGraphCallback = function() {
+window.initGraphDistanceCallback = function() {
   color.domain(newData.map(function(item) {
     return item.name;
   }));
-  plots.push(new PlotCarsTelemetryValueByTime("speed_chart", "speed",
-      ".speed-graph", 'Speed, m/s'));
-  plots.push(new PlotCarsTelemetryValueByTime("rpm_chart", "rpm",
-      ".rpm-graph", 'RPM'));
-
+  plots.push(new PlotCarsTelemetryValueByDistance("speed_dist_chart", "speed",
+      ".speed-dist-graph", 'Speed, m/s'));
   tick();
 }
 

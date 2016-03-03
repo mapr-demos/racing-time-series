@@ -38,12 +38,13 @@ public class CarStreamConsumer {
         long pollTimeOut = 1000;
         while(true) {
             ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
-            if (records.isEmpty()) {
-//                System.out.println("No data arrived...");
-            } else {
+            if (!records.isEmpty()) {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).forEach((record) -> {
-//                    System.out.println("Consuming: " + record.toString() + " from " + this.topic);
+                    if (record.key() != null && record.key().equals("test")) {
+                        System.out.println("Car consumer " + topic +" warm-up done");
+                        return;
+                    }
                     try {
                         JSONArray array = new JSONArray(record.value());
                         for (int i = 0; i < array.length(); i++) {

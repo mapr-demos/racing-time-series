@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -20,8 +21,6 @@ public class LiveConsumer {
     private List<String> carTopics;
     private Map<String, Integer> topicsForCars = new HashMap<>();
 
-    private final ScheduledExecutorService scheduler =
-            Executors.newScheduledThreadPool(11);
     private List<BaseConsumer> consumers = new ArrayList<>();
 
     public LiveConsumer(String confFilePath) {
@@ -33,9 +32,11 @@ public class LiveConsumer {
         for (String topic : carTopics) {
             consumers.add(new SingleCarConsumer(topic, topicsForCars.get(topic)));
         }
+
+        consumers.forEach(BaseConsumer::start);
     }
 
-    public abstract class BaseConsumer implements Runnable {
+    public abstract class BaseConsumer extends Thread {
         private KafkaConsumer<String, String> consumer;
 
         public BaseConsumer(String topic) {
@@ -45,18 +46,18 @@ public class LiveConsumer {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 consumer.close();
             }));
-
-            scheduler.scheduleWithFixedDelay(this, 500, 500, TimeUnit.MILLISECONDS);
         }
 
         @Override
         public void run() {
-            long pollTimeOut = 450;
+            long pollTimeOut = 10;
 
-            ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
-            if (!records.isEmpty()) {
-                processRecords(records);
-                consumer.commitAsync();
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
+                if (!records.isEmpty()) {
+                    processRecords(records);
+                    consumer.commitAsync();
+                }
             }
         }
 
@@ -74,8 +75,14 @@ public class LiveConsumer {
         protected void processRecords(ConsumerRecords<String, String> records) {
             System.out.println("New items on " + id + ": " + records.count());
             for(ConsumerRecord<String, String> record : records) {
+                if (record.key() != null && record.key().equals("test")) {
+                    System.out.println("Live cars consumer " + id +" warm-up done");
+                    onTestMessage("car" + id);
+                    continue;
+                }
                 try {
                     JSONArray array = new JSONArray(record.value());
+                    System.out.println("L: " + ((JSONObject)array.get(0)).getDouble("racetime") + ": "  + System.currentTimeMillis());
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject recordJSON = (JSONObject) array.get(i);
                         recordJSON.put("carId", id);
@@ -96,6 +103,11 @@ public class LiveConsumer {
         protected void processRecords(ConsumerRecords<String, String> records) {
             System.out.println("New items on events: " + records.count());
             for(ConsumerRecord<String, String> record : records) {
+                if (record.key() != null && record.key().equals("test")) {
+                    System.out.println("Live events consumer warm-up done");
+                    onTestMessage("events");
+                    continue;
+                }
                 try {
                     switch (record.key()) {
                         case EventsStreamConsumer.RACE_STARTED:
@@ -126,34 +138,6 @@ public class LiveConsumer {
         return configurer.getTopicName(Configurer.TOPIC_EVENTS);
     }
 
-//    @Override
-//    public void run() {
-//        long pollTimeOut = 0;
-//
-//        ConsumerRecords<String, String> records = consumer.poll(pollTimeOut);
-//        if (!records.isEmpty()) {
-//            System.out.println("New items: " + records.count());
-//            consumer.commitAsync();
-//            for(ConsumerRecord<String, String> record : records) {
-//                try {
-//                    if (record.topic().equals(eventsTopic)) {
-//                        eventReceived(record);
-//                    } else {
-//                        JSONArray array = new JSONArray(record.value());
-//                        for (int i = 0; i < array.length(); i++) {
-//                            JSONObject recordJSON = (JSONObject) array.get(i);
-//                            recordJSON.put("carId", topicsForCars.get(record.topic()));
-//                            onNewData(recordJSON);
-//                        }
-//                    }
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//    }
-
     private Set<Listener> listeners = Collections.synchronizedSet(new HashSet<>());
 
     public void onNewData(JSONObject arg) {
@@ -162,6 +146,10 @@ public class LiveConsumer {
 
     public void onRaceStarted(JSONObject value) {
         listeners.forEach((l) -> l.onRaceStarted(value));
+    }
+
+    public void onTestMessage(String value) {
+        listeners.forEach((l) -> l.onTestMessage(value));
     }
 
     public void subscribe(Listener l) {
@@ -175,6 +163,7 @@ public class LiveConsumer {
     public interface Listener {
         void onNewData(JSONObject data);
         void onRaceStarted(JSONObject value);
+        void onTestMessage(String value);
     }
 
     private class ConsumerConfigurer extends Configurer {

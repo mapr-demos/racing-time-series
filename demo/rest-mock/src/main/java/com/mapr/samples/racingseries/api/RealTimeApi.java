@@ -36,6 +36,7 @@ public class RealTimeApi extends EventSourceServlet {
     protected static class TimestampSource implements EventSource, LiveConsumer.Listener {
         private ConcurrentLinkedQueue<JSONObject> timestampsQueue = new ConcurrentLinkedQueue<>();
         private ConcurrentLinkedQueue<JSONObject> racesQueue = new ConcurrentLinkedQueue<>();
+        private ConcurrentLinkedQueue<String> warmupQueue = new ConcurrentLinkedQueue<>();
 
         private LiveConsumer poller;
         private long actualTimestamp;
@@ -47,12 +48,24 @@ public class RealTimeApi extends EventSourceServlet {
         @Override
         public void onOpen(final EventSource.Emitter emitter) throws IOException {
             poller.subscribe(this);
+            emitter.event("test", "Event source opened");
             System.out.println("opened");
             while (true) {
-                    emitRaces(emitter);
-                    emitTimestamps(emitter);
-                }
+                emitWarmup(emitter);
+                emitRaces(emitter);
+                emitTimestamps(emitter);
             }
+        }
+
+        private void emitWarmup(Emitter emitter) throws IOException {
+            String value;
+            do {
+                value = warmupQueue.poll();
+                if (value != null) {
+                    emitter.event("test", value);
+                }
+            } while (value != null);
+        }
 
         private void emitRaces(Emitter emitter) throws IOException {
             JSONObject race;
@@ -65,7 +78,8 @@ public class RealTimeApi extends EventSourceServlet {
         }
 
         private void emitTimestamps(Emitter emitter) throws IOException {
-            final int MAX_SIZE = 20;
+            final int MAX_SIZE = 200;
+            long t = System.currentTimeMillis();
             List<JSONObject> frozenQueue = new ArrayList<>(MAX_SIZE);
             do {
                 JSONObject obj = timestampsQueue.poll();
@@ -94,6 +108,7 @@ public class RealTimeApi extends EventSourceServlet {
 
             if (!telemetryTimestamps.isEmpty()) {
                 response.setTimestamps(telemetryTimestamps);
+                System.out.println("1: " + t + " -> " + System.currentTimeMillis());
 
                 emitter.data(new JSONObject(response).toString());
             }
@@ -116,6 +131,11 @@ public class RealTimeApi extends EventSourceServlet {
         public void onRaceStarted(JSONObject value) {
             racesQueue.add(value);
             actualTimestamp = value.getLong("timestamp");
+        }
+
+        @Override
+        public void onTestMessage(String value) {
+            warmupQueue.add(value);
         }
     }
 }

@@ -2,6 +2,8 @@ import com.mapr.examples.telemetryagent.CarStreamsRouter;
 import com.mapr.examples.telemetryagent.CarStreamConsumer;
 import com.mapr.examples.telemetryagent.EventsStreamConsumer;
 import com.mapr.examples.telemetryagent.TelemetryProducer;
+import com.mapr.examples.telemetryagent.test.TestConsumer;
+import com.mapr.examples.telemetryagent.test.TestProducer;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -26,7 +28,7 @@ public class Main {
                 .defaultHelp(true)
                 .description("Simple Kafka client");
         parser.addArgument("-t", "--type")
-                .choices("producer", "consumer", "router", "events")
+                .choices("producer", "consumer", "router", "events", "test1", "test2")
                 .required(true)
                 .help("Specify client type");
         parser.addArgument("-c", "--conf")
@@ -66,6 +68,17 @@ public class Main {
             case "events": {
                 EventsStreamConsumer eventsConsumer = new EventsStreamConsumer(confFilePath);
                 eventsConsumer.start();
+                break;
+            }
+
+            case "test1": {
+                TestProducer test = new TestProducer();
+                test.start();
+                break;
+            }
+            case "test2": {
+                TestConsumer test = new TestConsumer();
+                test.start();
                 break;
             }
             default:
