@@ -30,6 +30,11 @@ echo '192.168.42.2 centos7-sn' >> /etc/hosts
 /opt/mapr/server/configure.sh -N cyber.mapr.cluster -c -C centos7-sn:7222 -HS centos7-sn -Z centos7-sn
 useradd mapr -u 5000
 
+apt-get install -y maven
+cd /vagrant/rest-mock
+mvn install
+cd /vagrant/TelemetryAgent
+mvn install
 
 cat > /home/vagrant/Desktop/Streams-Demo.desktop << EOF
 #!/usr/bin/env xdg-open
