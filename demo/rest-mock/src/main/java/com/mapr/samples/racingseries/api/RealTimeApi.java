@@ -78,7 +78,7 @@ public class RealTimeApi extends EventSourceServlet {
         }
 
         private void emitTimestamps(Emitter emitter) throws IOException {
-            final int MAX_SIZE = 200;
+            final int MAX_SIZE = 5*3;
             long t = System.currentTimeMillis();
             List<JSONObject> frozenQueue = new ArrayList<>(MAX_SIZE);
             do {

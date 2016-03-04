@@ -49,9 +49,6 @@ public class EventsStreamConsumer {
                 System.out.println(">> RACE_START event stored");
                 carsDAO.newRace(record.value());
                 break;
-            case "test":
-                System.err.println("Events warm-up done");
-                break;
             default:
                 System.err.println("Unknown event " + record.key());
         }

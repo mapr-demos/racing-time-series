@@ -25,7 +25,6 @@ public class CarStreamConsumer {
     public CarStreamConsumer(String confFilePath, int id) {
         configurer = new ConsumerConfigurer(confFilePath);
         topic = String.format(configurer.getTopic(), id);
-//        System.out.println(topic);
         consumer = new KafkaConsumer<>(configurer.getKafkaProps());
         consumer.subscribe(Arrays.asList(topic));
         carsDAO = new CarsDAO(id, String.format("car%d", id));
@@ -41,10 +40,6 @@ public class CarStreamConsumer {
             if (!records.isEmpty()) {
                 Iterable<ConsumerRecord<String, String>> iterable = records::iterator;
                 StreamSupport.stream(iterable.spliterator(), false).forEach((record) -> {
-                    if (record.key() != null && record.key().equals("test")) {
-                        System.out.println("Car consumer " + topic +" warm-up done");
-                        return;
-                    }
                     try {
                         JSONArray array = new JSONArray(record.value());
                         for (int i = 0; i < array.length(); i++) {

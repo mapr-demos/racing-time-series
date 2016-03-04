@@ -73,16 +73,9 @@ public class LiveConsumer {
         }
 
         protected void processRecords(ConsumerRecords<String, String> records) {
-            System.out.println("New items on " + id + ": " + records.count());
             for(ConsumerRecord<String, String> record : records) {
-                if (record.key() != null && record.key().equals("test")) {
-                    System.out.println("Live cars consumer " + id +" warm-up done");
-                    onTestMessage("car" + id);
-                    continue;
-                }
                 try {
                     JSONArray array = new JSONArray(record.value());
-                    System.out.println("L: " + ((JSONObject)array.get(0)).getDouble("racetime") + ": "  + System.currentTimeMillis());
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject recordJSON = (JSONObject) array.get(i);
                         recordJSON.put("carId", id);
@@ -103,11 +96,6 @@ public class LiveConsumer {
         protected void processRecords(ConsumerRecords<String, String> records) {
             System.out.println("New items on events: " + records.count());
             for(ConsumerRecord<String, String> record : records) {
-                if (record.key() != null && record.key().equals("test")) {
-                    System.out.println("Live events consumer warm-up done");
-                    onTestMessage("events");
-                    continue;
-                }
                 try {
                     switch (record.key()) {
                         case EventsStreamConsumer.RACE_STARTED:

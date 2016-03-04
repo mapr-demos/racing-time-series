@@ -2,25 +2,8 @@ window.newData = [];
 window.latestTimestamp = 0;
 window.raceId = 0;
 
-//function pollData(callback) {
-//	d3.json('/telemetry/metrics?offset=' + latestTimestamp,
-//			function(error, telemerty) {
-//				if(error) {
-//					console.log('Error', error);
-//					return;
-//				} else {
-//				mapTelemertyNew(telemerty);
-//					if (callback) {
-//						callback();
-//					}
-//				}
-//				setTimeout(pollData, 200);
-//			});
-//}
-//
 $(function() {
     window.initGraphCallback();
-    window.initGraphDistanceCallback();
 });
 
 var source = new EventSource('/talk');
@@ -56,16 +39,35 @@ function getTimestapsForCar(carId) {
 	}
 }
 
+function getLatestLapForCar(carId) {
+  var car;
+  newData.some(function(carItem) {
+    if(carItem.name === carId) {
+      car = carItem;
+      return true;
+    }
+    return false;
+  });
+  var laps = car.laps;
+  if (!laps) {
+    var lap = [];
+    car.laps = [lap];
+    return lap;
+  }
+  return laps[laps.length-1];
+}
+
 function mapTelemertyNew(telemerty) {
     if (telemerty && telemerty.raceId != window.raceId) {
         window.latestTimestamp = 0; // new race started
-        window.newData.splice(0, window.newData.length);
+        window.newData = [];
         window.raceId = telemerty.raceId;
     }
 	if (telemerty && telemerty.timestamps) {
 		telemerty.timestamps.forEach(function(timestampItem) {
 			timestampItem.cars.forEach(function(carSensors) {
 				var carTimestamps = getTimestapsForCar(carSensors.carId);
+				var latestLap = getLatestLapForCar(carSensors.carId);
 				// Search for the already existing car timestamp for this car
 				var sensorsTimestamp = carTimestamps.filter(function(
 						carSensorsTimestamp) {
@@ -81,9 +83,28 @@ function mapTelemertyNew(telemerty) {
 						sensors : carSensors.sensors
 					});
 				}
+				if(latestLap.length) {
+				  var lastAx = latestLap[latestLap.length -1].distance;
+				  if(carSensors.sensors.distance < lastAx) {
+				    var carLapsData;
+				    newData.some(function(carItem){
+				      if(carItem.name === carSensors.carId) {
+				        carLapsData = carItem.laps;
+				        return true;
+				      }
+				      return false;
+				    });
+				    // Add new lap here
+				    carLapsData.push([carSensors.sensors]);
+				  } else {
+				    latestLap.push(carSensors.sensors);
+				  }
+				} else {
+				  latestLap.push(carSensors.sensors);
+				}
 			});
 			// update latest timestamp
-    	    latestTimestamp = timestampItem.time > latestTimestamp ? timestampItem.time : latestTimestamp;
+			latestTimestamp = timestampItem.time > latestTimestamp ? timestampItem.time : latestTimestamp;
 		});
 	}
 }

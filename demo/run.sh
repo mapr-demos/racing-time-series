@@ -13,7 +13,6 @@ done
 firefox 127.0.0.1:8080/demo.html &
 sleep 1
 torcs &
-wmctrl -r "/usr/local/lib/torcs/torcs-bin" -b add,above
 
 echo Started jobs:
 jobs -pr

@@ -100,20 +100,6 @@ public class TelemetryProducer {
         }
     }
 
-    private void warmUp() {
-        final String TEST_MESSAGE = "It's time to rock!";
-        ProducerRecord<String, byte[]> rec;
-        //Events
-        rec = new ProducerRecord<>(configurer.getTopicName(Configurer.TOPIC_EVENTS),
-                "test", TEST_MESSAGE.getBytes());
-        producer.send(rec);
-        //Cars
-        rec = new ProducerRecord<>(topic,
-                "test", TEST_MESSAGE.getBytes());
-        producer.send(rec);
-        producer.flush();
-    }
-
     private void persistPointer(long fileSize, long lastKnownPosition, long readLineCounter) {
         try {
             PrintWriter writer = new PrintWriter(TMP_TELEMETRY_POINTER_FILE, "UTF-8");
@@ -174,6 +160,7 @@ public class TelemetryProducer {
                 return;
             }
         });
+        producer.flush();
     }
 
     private void sendTelemetryToStream(String logLine) {
@@ -189,11 +176,6 @@ public class TelemetryProducer {
     private Batcher<JSONObject> telemetryBatch = new Batcher<>("prod", 5, (batch) -> {
         ProducerRecord<String, byte[]> rec;
         JSONArray array = new JSONArray(batch);
-        try {
-            System.out.println("P: " + batch.get(0).getDouble("racetime"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         rec = new ProducerRecord<>(topic, array.toString().getBytes());
         producer.send(rec, (recordMetadata, e) -> {
             if (e != null) {
@@ -202,6 +184,7 @@ public class TelemetryProducer {
                 return;
             }
         });
+        producer.flush();
     });
 
     protected static class LogsToJSONConverter {

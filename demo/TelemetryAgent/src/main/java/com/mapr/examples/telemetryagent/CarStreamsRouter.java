@@ -57,16 +57,10 @@ public class CarStreamsRouter {
     }
 
     private void decodeAndSend(ConsumerRecord<String, String> record) {
-        if (record.key() != null && record.key().equals("test")) {
-            warmUp();
-            return;
-        }
-
         String recordValue = record.value();
         JSONArray records;
         try {
             records = new JSONArray(recordValue);
-            System.out.println("R: " + ((JSONObject)records.get(0)).getDouble("racetime"));
             for (int i = 0; i < records.length(); i++) {
                 decodeSingleRecordAndSend((JSONObject) records.get(i));
             }
@@ -74,20 +68,6 @@ public class CarStreamsRouter {
             System.err.println("Error during processing records " + recordValue);
             e.printStackTrace();
         }
-    }
-
-    private void warmUp() {
-        System.out.println("Router warm-up done");
-
-        final String TEST_MESSAGE = "It's time to rock!";
-        ProducerRecord<String, byte[]> rec;
-        //Events
-        for(int carId=1; carId<=10; carId++) {
-            rec = new ProducerRecord<>(format(writeTopic, carId),
-                    "test", TEST_MESSAGE.getBytes());
-            producer.send(rec);
-        }
-        producer.flush();
     }
 
     /**
@@ -99,11 +79,6 @@ public class CarStreamsRouter {
 
             Batcher<JSONObject> batcher = new Batcher<>(topic, 5, (batch) -> {
                 JSONArray array = new JSONArray(batch);
-                try {
-                    System.out.println("R2: " + (batch.get(0)).getDouble("racetime"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
                 ProducerRecord<String, byte[]> rec = new ProducerRecord<>(topic, array.toString().getBytes());
                 producer.send(rec, (recordMetadata, e) -> {
                     if (e != null) {
@@ -112,6 +87,7 @@ public class CarStreamsRouter {
                         return;
                     }
                 });
+                producer.flush();
             });
 
             telemetryBatchers.put(topic, batcher);

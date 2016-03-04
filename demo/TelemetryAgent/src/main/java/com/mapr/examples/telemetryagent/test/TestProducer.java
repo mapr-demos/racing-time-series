@@ -55,12 +55,14 @@ public class TestProducer {
             int i = 0;
             Random r = new Random();
             while (true) {
-//                Thread.sleep(10);
+                //Any sleep solves the issue
+//                Thread.sleep(5);
                 JSONObject obj = new JSONObject();
                 obj.put("id", i);
-                obj.put("rand", gen(r.nextInt(1000)));
+                obj.put("rand", gen(r.nextInt(50000)));
 //                b.add(obj);
-                ProducerRecord<String, byte[]> rec = new ProducerRecord<>(TOPIC, obj.toString().getBytes());
+                JSONArray array = new JSONArray(Arrays.asList(obj));
+                ProducerRecord<String, byte[]> rec = new ProducerRecord<>(TOPIC, array.toString().getBytes());
                 producer.send(rec, (recordMetadata, e) -> {
                     if (e != null) {
                         System.err.println("Exception occurred while sending :(");

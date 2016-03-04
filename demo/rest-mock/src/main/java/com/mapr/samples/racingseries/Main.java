@@ -1,7 +1,5 @@
 package com.mapr.samples.racingseries;
 
-import com.mapr.examples.telemetryagent.CarsDAO;
-import com.mapr.examples.telemetryagent.util.NoRacesException;
 import com.mapr.samples.racingseries.api.RealTimeApi;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -21,12 +19,6 @@ public class Main {
         LOG.info("================================================");
         LOG.info("   Starting Telemetry UI");
         LOG.info("================================================\n\n");
-        try {
-            //Init database connection
-            new CarsDAO().getLatestRace();
-        } catch (NoRacesException ex) {
-            System.err.println("No races found");
-        }
 
         Server server = new Server(8080);
 

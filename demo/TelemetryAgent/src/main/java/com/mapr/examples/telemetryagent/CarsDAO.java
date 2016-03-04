@@ -11,6 +11,7 @@ import com.mapr.examples.telemetryagent.beans.Race;
 import com.mapr.examples.telemetryagent.util.Batcher;
 import com.mapr.examples.telemetryagent.util.NoRacesException;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.ojai.Document;
 import org.ojai.store.QueryCondition;
 import org.ojai.store.exceptions.DocumentNotFoundException;
@@ -104,7 +105,9 @@ public class CarsDAO {
 
                 document.set("timestamp", currentTimestamp);
                 document.set("racetime", records.get(0).getDouble("racetime"));
-                telemetryTable.insert(UUID.randomUUID().toString(), document);
+                String key = StringUtils.leftPad(((Double) currentTimestamp).toString(), 10, '0') + "/" +
+                        StringUtils.leftPad(((Double)records.get(0).getDouble("racetime")).toString(), 4, '0');
+                telemetryTable.insert(key, document);
                 telemetryTable.flush();
             });
 
