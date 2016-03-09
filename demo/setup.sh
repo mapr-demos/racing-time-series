@@ -31,10 +31,10 @@ echo '192.168.42.2 centos7-sn' >> /etc/hosts
 useradd mapr -u 5000
 
 apt-get install -y maven
-cd /vagrant/rest-mock
-mvn install
 cd /vagrant/TelemetryAgent
-mvn install
+MAVEN_OPTS=-Xss256m mvn clean install
+cd /vagrant/rest-mock
+MAVEN_OPTS=-Xss256m mvn clean install
 
 cat > /home/vagrant/Desktop/Streams-Demo.desktop << EOF
 #!/usr/bin/env xdg-open
