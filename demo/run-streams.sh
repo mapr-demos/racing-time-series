@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ `id -u` -ne 5000 ]; then
+if [ "`id -un`" != 'mapr' ]; then
 	echo "Should be executed as mapr user"
 	exit 1
 fi

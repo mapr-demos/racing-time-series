@@ -1,3 +1,10 @@
+MAPR_UID=${MAPR_UID:-5000}
+CLUSTER_IP=${CLUSTER_IP:-}
+CLUSTER_HOST=${CLUSTER_HOST:-mapr-cluster}
+CLUSTER_NAME=${CLUSTER_NAME:-mapr.cluster}
+
+source /vagrant/config.conf
+
 apt-get update
 apt-get install -y ca-certificates build-essential libxmu-dev libxmu6 libxi-dev libxine-dev libalut-dev freeglut3 freeglut3-dev cmake libogg-dev libvorbis-dev libxxf86dga-dev libxxf86vm-dev libxrender-dev libxrandr-dev zlib1g-dev libpng12-dev libplib-dev wmctrl
 
@@ -26,9 +33,13 @@ apt-get update -y
 echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
 echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections
 apt-get install oracle-java8-installer -y
-echo '192.168.42.2 centos7-sn' >> /etc/hosts
-/opt/mapr/server/configure.sh -N cyber.mapr.cluster -c -C centos7-sn:7222 -HS centos7-sn -Z centos7-sn
-useradd mapr -u 5000
+
+if [ -n "${CLUSTER_IP}" ]
+	then echo "${CLUSTER_IP} ${CLUSTER_HOST}" >> /etc/hosts
+fi
+/opt/mapr/server/configure.sh -N "${CLUSTER_NAME}" -c -C "${CLUSTER_HOST}":7222 -HS "${CLUSTER_HOST}" -Z "${CLUSTER_HOST}"
+
+useradd mapr -u ${MAPR_UID}
 
 apt-get install -y maven
 cd /vagrant/TelemetryAgent
