@@ -63,13 +63,15 @@ public class CarsDAO {
         return counter;
     }
 
+    private static final Object lock = new Object();
     private Table getTable(String tableName) {
         Table table;
-
-        if (!MapRDB.tableExists(tableName)) {
-            table = MapRDB.createTable(tableName); // Create the table if not already present
-        } else {
-            table = MapRDB.getTable(tableName); // get the table
+        synchronized (lock) {
+            if (!MapRDB.tableExists(tableName)) {
+                table = MapRDB.createTable(tableName); // Create the table if not already present
+            } else {
+                table = MapRDB.getTable(tableName); // get the table
+            }
         }
         return table;
     }
