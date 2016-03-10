@@ -1,4 +1,5 @@
 MAPR_UID=${MAPR_UID:-5000}
+MAPR_GID=${MAPR_GID:-5000}
 CLUSTER_IP=${CLUSTER_IP:-}
 CLUSTER_HOST=${CLUSTER_HOST:-mapr-cluster}
 CLUSTER_NAME=${CLUSTER_NAME:-mapr.cluster}
@@ -45,7 +46,8 @@ if [ -n "${CLUSTER_IP}" ]
 fi
 /opt/mapr/server/configure.sh -N "${CLUSTER_NAME}" -c -C "${CLUSTER_HOST}":7222 -HS "${CLUSTER_HOST}" -Z "${CLUSTER_HOST}"
 
-useradd mapr -u ${MAPR_UID}
+groupadd mapr -g ${MAPR_GID}
+useradd mapr -u ${MAPR_UID} -g ${MAPR_GID}
 
 # Build the TelemetryAgent (MapR Streams producers/consumers) and UI Server
 
