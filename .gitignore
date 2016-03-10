@@ -9,3 +9,4 @@ demo/download
 target
 *.swp
 *.out
+log4.log
