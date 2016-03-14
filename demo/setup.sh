@@ -30,8 +30,8 @@ make install
 make datainstall
 
 # Setup MapR Client
-echo 'deb http://mapr-partner.s3.amazonaws.com/ecosystem-5.x/ubuntu binary/' >> /etc/apt/sources.list
-echo 'deb http://mapr-partner.s3.amazonaws.com/v5.1.0/ubuntu mapr optional' >> /etc/apt/sources.list
+echo 'deb http://package.mapr.com/releases/ecosystem-5.x/ubuntu binary/' >> /etc/apt/sources.list
+echo 'deb http://package.mapr.com/releases/v5.1.0/ubuntu/ mapr optional' >> /etc/apt/sources.list
 
 apt-get update --allow-unauthenticated 
 apt-get install mapr-kafka -y --allow-unauthenticated

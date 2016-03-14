@@ -18,7 +18,7 @@ fi
 echo
 
 echo "> Create stream -path /cars"
-maprcli stream create -path /cars
+maprcli stream create -path /cars -produceperm p -consumeperm p -topicperm p
 
 echo "> Create topic -path /cars -topic all"
 maprcli stream topic create -path /cars -topic all
@@ -32,3 +32,5 @@ done
 
 echo "> Create base dir for MapR DB tables /apps/telemetry/"
 hadoop fs -mkdir /apps/telemetry/
+
+echo "====== \n Streams and Topics Created"

@@ -16,24 +16,13 @@
             <releases><enabled>true</enabled></releases>
         </repository>
 
-        <repository>
-            <id>mapr-private</id>
-            <url> http://repository_cv.mapr.com/maven/</url>
-            <snapshots><enabled>true</enabled></snapshots>
-            <releases><enabled>true</enabled></releases>
-        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>0.9.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.10</artifactId>
-            <version>0.9.0.0</version>
+            <version>0.9.0.0-mapr-1602</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -49,7 +38,7 @@
         <dependency>
             <groupId>com.mapr.db</groupId>
             <artifactId>maprdb</artifactId>
-            <version>5.1.0-mapr-SNAPSHOT</version>
+            <version>5.1.0-mapr</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
