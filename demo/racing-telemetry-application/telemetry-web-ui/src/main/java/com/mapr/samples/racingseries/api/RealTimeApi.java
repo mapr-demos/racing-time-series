@@ -21,8 +21,9 @@ import java.util.stream.Stream;
 public class RealTimeApi extends EventSourceServlet {
     private static final long serialVersionUID = 1L;
 
+	// TODO : Externalize all configuration - avoid such path
     private LiveConsumer consumer;
-    private String CONFIG_PATH = "/vagrant/TelemetryAgent/src/main/resources/live_consumer.conf";
+    private String CONFIG_PATH = "/vagrant/racing-telemetry-application/telemetry-agent/src/main/resources/live_consumer.conf";
 
     public RealTimeApi() {
         consumer = new LiveConsumer(CONFIG_PATH);

@@ -52,9 +52,7 @@ useradd mapr -u ${MAPR_UID} -g ${MAPR_GID}
 # Build the TelemetryAgent (MapR Streams producers/consumers) and UI Server
 
 apt-get install -y maven
-cd /vagrant/TelemetryAgent
-MAVEN_OPTS=-Xss256m mvn clean install
-cd /vagrant/rest-mock
+cd /vagrant/racing-telemetry-application
 MAVEN_OPTS=-Xss256m mvn clean install
 
 # Add the launcher to the desktop

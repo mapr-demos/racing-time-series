@@ -1,5 +1,6 @@
 #!/bin/bash
-TA_ROOT=/vagrant/TelemetryAgent/
+TA_ROOT=/vagrant/racing-telemetry-application/telemetry-agent
 cd $TA_ROOT
 
-java -cp "`mapr classpath`:$TA_ROOT/target/telemetryagent-example.jar" Main -t $@ -c $TA_ROOT/src/main/resources/streams.conf
+java -cp "`mapr classpath`:$TA_ROOT/target/telemetry-agent.jar" Main -t $@ -c $TA_ROOT/src/main/resources/streams.conf
+

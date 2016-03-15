@@ -1,14 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<parent>
+		<groupId>com.mapr.streamsdemo</groupId>
+		<artifactId>racing-telemetry-application</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.mapr</groupId>
-	<artifactId>telemetry-ui</artifactId>
+
+
+	<artifactId>telemetry-web-ui</artifactId>
 	<packaging>jar</packaging>
-	<name>TelemetryUIServer</name>
-	<version>0.0.1</version>
+	<description>Web Server with REST interface to consume data from Streams and expose data in real time from Racing Cars (TORCS)</description>
+
 	<properties>
 		<jersey.version>2.22.2</jersey.version>
-        <jetty.version>9.0.2.v20130417</jetty.version>
+    <jetty.version>9.0.2.v20130417</jetty.version>
 	</properties>
 
 	<repositories>
@@ -80,7 +87,7 @@
 
         <dependency>
 			<groupId>com.mapr.streamsdemo</groupId>
-			<artifactId>TelemetryAgent-example</artifactId>
+			<artifactId>telemetry-agent</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 
@@ -119,7 +126,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<appendAssemblyId>false</appendAssemblyId>
-					<finalName>telemetryui</finalName>
+					<finalName>telemetry-web-ui-complete</finalName>
 					<archive>
 						<manifest>
 							<mainClass>com.mapr.samples.racingseries.Main</mainClass>
