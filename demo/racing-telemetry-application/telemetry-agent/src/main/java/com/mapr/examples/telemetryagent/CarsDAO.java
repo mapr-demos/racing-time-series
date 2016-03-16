@@ -26,7 +26,7 @@ public class CarsDAO {
     Table telemetryTable;
     Table racesTable;
 
-    final static public String APPS_DIR = "/apps/telemetry/";
+    final static public String APPS_DIR = "/apps/racing/db/telemetry/";
     public static final String RACES_TABLE = APPS_DIR + "races";
     private int id;
 

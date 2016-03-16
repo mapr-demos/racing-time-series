@@ -21,6 +21,7 @@
   <modules>
     <module>telemetry-agent</module>
     <module>telemetry-web-ui</module>
+    <module>telemetry-tester</module>
   </modules>
 
 

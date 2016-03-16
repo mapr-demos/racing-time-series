@@ -10,6 +10,7 @@ target
 *.swp
 *.out
 log4.log
+log4.log.*
 
 # Java
 *.class

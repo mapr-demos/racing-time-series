@@ -10,6 +10,9 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import java.io.File;
+
+
 public class Main {
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(Main.class);
@@ -17,11 +20,12 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         LOG.info("================================================");
-        LOG.info("   Starting Telemetry UI");
+        LOG.info("   Starting Telemetry Web UI");
         LOG.info("================================================\n\n");
 
-        Server server = new Server(8080);
+        String httpPort = System.getProperty("racing.http.port", "8080");
 
+        Server server = new Server( Integer.parseInt(httpPort) );
 
         ServletHolder sh = new ServletHolder(ServletContainer.class);
         // Set the package where the services reside
@@ -44,6 +48,9 @@ public class Main {
 
         server.start();
         server.join();
+
+        LOG.info("Racing Telemetry Web Service started on port "+ httpPort);
+
     }
 
 }
