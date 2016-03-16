@@ -105,6 +105,7 @@ Note:
 
 * The current Web site only print the data of the current race
 * You can customise the race in TORCS but only the *Inferno* cars are emitting data to Streams.
+* The `demo` folder of the project is automatically loaded as a shared folder into the Vagrant virtual machine and accessible at `/vagrant`
 
 
 ## Data Flow - How this works?
