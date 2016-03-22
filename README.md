@@ -33,7 +33,7 @@ $ git clone https://github.com/mapr-demos/racing-time-series.git
 
 The demonstrations is using:
 
-* Topics located in the `/app/racing/stream` stream
+* Topics located in the `/apps/racing/stream` stream
 * Tables located in the `/apps/racing/db/telemetry` folder
 
 To create all these object run the `./demo/setup-stream.sh` file on your MapR cluster.
