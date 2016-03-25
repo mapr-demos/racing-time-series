@@ -27,7 +27,9 @@ These need to have been downloaded and installed:
 Note: These instructions assume that you've downloaded and successfully imported the [MapR 5.1 Sandbox for VirtualBox](https://www.google.com/url?q=http://package.mapr.com/releases/v5.1.0/sandbox/MapR-Sandbox-For-Hadoop-5.1.0.ova&sa=D&ust=1458911397500000&usg=AFQjCNFLi7VMpHmxiUIISf_wonS-7mMQ8Q) VM.
 
 * Go to VirtualBox **Preferences > Network > Host-only Networks**.  If no networks are listed then click the green "+" icon on the far-right side:
+
  ![](images/VM00.png)
+
 	In my case the Host-only Network is called **vboxnet0** - There doesn't seem to be a way to change the name of the network.  
 
 * Click on the **Edit** icon, which is also on the far-right side, then click the **DHCP Server** button - This will display the configuration settings of my newly-created **vboxnet0** Host-only Network:
