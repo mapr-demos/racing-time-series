@@ -28,7 +28,7 @@ Note: These instructions assume that you've downloaded and successfully imported
 
 * Go to VirtualBox **Preferences > Network > Host-only Networks**.  If no networks are listed then click the green "+" icon on the far-right side:
 
- ![](images/VM00.png)
+	![](images/VM00.png)
 
 	In my case the Host-only Network is called **vboxnet0** - There doesn't seem to be a way to change the name of the network.  
 
@@ -40,11 +40,11 @@ Note: These instructions assume that you've downloaded and successfully imported
 
 * Make sure the MapR Sandbox VM is **shut down**, then go to **Machine > Settings… > Network > Adapter 2**.  Tick the **Enable Network Adapter** checkbox, then set up like so:
 
-![](images/VM02.png)
+	![](images/VM02.png)
 
 * Add a third network interface by clicking on **Adapter 3**, then tick the **Enable Network Adapter** checkbox and set up like so:
 
-![](images/VM03.png)
+	![](images/VM03.png)
 
 * Click the **OK** button when finished.
 
@@ -53,7 +53,7 @@ Note: These instructions assume that you've downloaded and successfully imported
 * Navigate to the **/etc/sysconfig/network-scripts** folder.  Look for **ifcfg-eth1** file - it probably won't exist - if it doesn't exist, then create it as a copy of the **ifcfg-eth0** file.
 * Edit the **ifcfg-eth1** file and configure similar to this:
 
-![](images/VM04.png)
+	![](images/VM04.png)
 
 	Note that I've assigned static IP address **192.168.56.101** based on what was noted earlier from the **DHCP Server** settings of the **vboxnet0** Host-only Network.
 
@@ -61,7 +61,7 @@ Note: These instructions assume that you've downloaded and successfully imported
 
 * Edit the **ifcfg-eth2** file and configure similar to this:
 
-![](images/VM05.png)
+	![](images/VM05.png)
 
 	Note that I've assigned static IP address 192.168.100.101 - I'm following a similar pattern to that which was noted earlier from the DHCP Server settings of the vboxnet0 Host-only Network.  
 * Save and exit from editing the **ifcfg-eth2** file.
@@ -69,7 +69,7 @@ Note: These instructions assume that you've downloaded and successfully imported
 * Restart network services using the **service network restart** command.
 * If you execute an **ip addr** command you should see something like this:
 
-![](images/VM06.png)
+	![](images/VM06.png)
 
 * At this point it should be possible to ssh into the MapR sandbox from a Mac Terminal window like so:
 ```
