@@ -75,6 +75,7 @@ Note: These instructions assume that you've downloaded and successfully imported
 ```
 ssh mapr@192.168.56.101
 ```
+
 	Note: You may want to add an entry to your **/etc/hosts** file so that you don't have to remember the IP address
 
 * Change to **root** and add the Sandbox VM's host name to the MapR sandbox's **/etc/hosts** file (be sure to map to the localhost IP as shown):
