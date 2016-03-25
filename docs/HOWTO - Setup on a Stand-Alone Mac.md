@@ -72,6 +72,7 @@ Note: These instructions assume that you've downloaded and successfully imported
 	![](images/VM06.png)
 
 * At this point it should be possible to ssh into the MapR sandbox from a Mac Terminal window like so:
+
 `ssh mapr@192.168.56.101`
 
 	Note: You may want to add an entry to your **/etc/hosts** file so that you don't have to remember the IP address
