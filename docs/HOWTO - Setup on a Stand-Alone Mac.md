@@ -34,7 +34,7 @@ Note: These instructions assume that you've downloaded and successfully imported
 
 * Click on the **Edit** icon, which is also on the far-right side, then click the **DHCP Server** button - This will display the configuration settings of my newly-created **vboxnet0** Host-only Network:
 
-![](images/VM01.png)
+	![](images/VM01.png)
 
 	Note the **IPv4 Address** that has been specified - in my case, **192.168.56.1** - This will be used later.
 
