@@ -61,96 +61,105 @@ Note: These instructions assume that you've downloaded and successfully imported
 ![](images/VM06.png)
 
 * At this point it should be possible to ssh into the MapR sandbox from a Mac Terminal window like so:
-`ssh mapr@192.168.56.101`
+```
+ssh mapr@192.168.56.101
+```
 	Note: You may want to add an entry to your **/etc/hosts** file so that you don't have to remember the IP address
 
 * Change to **root** and add the Sandbox VM's host name to the MapR sandbox's **/etc/hosts** file (be sure to map to the localhost IP as shown):
-`[root@mapr51 ~]# cat /etc/hosts
-127.0.0.1           localhost        mapr51`
-
+```
+[root@mapr51 ~]# cat /etc/hosts
+127.0.0.1           localhost        mapr51
+```
 * **cd** to the directory where the project will reside - In my case I used **$HOME/git** - Then clone Tug's repository like so:
-`cd $HOME/Documents/Git
-git clone https://github.com/mapr-demos/racing-time-series.git`
-
+```
+cd $HOME/Documents/Git
+git clone https://github.com/mapr-demos/racing-time-series.git
+```
 * Determine the IDs of the mapr user and group:
-`[mapr@mapr51 ~]$ id -u
+```
+[mapr@mapr51 ~]$ id -u
 500
 [mapr@mapr51 ~]$ id -g
-500`
-
+500
+```
 * Edit the **$HOME/git/racing-time-series/demo/config.conf** file and change the UID and GID to what was determined immediately above (if necessary).  Also, set the CLUSTER_IP value to the **internal** IP address that you assigned to the **MapR Sandbox VM**.  Here's what mine looks like:
-`# Change UID if you have non-default
-MAPR_UID=500`
-`# Change GID if you have non-default
+```
+# Change UID if you have non-default
+MAPR_UID=500
+# Change GID if you have non-default
 MAPR_GID=500
- `
-`# CLUSTER_IP is optional if you specified CLUSTER_HOST (which is real DNS name)
+
+# CLUSTER_IP is optional if you specified CLUSTER_HOST (which is real DNS name)
 CLUSTER_IP=192.168.100.101
- `
-`# CLUSTER_HOST is optional if you specified CLUSTER_IP
+
+# CLUSTER_HOST is optional if you specified CLUSTER_IP
 CLUSTER_HOST=mapr51
- `
-`# Set your MapR cluster name
+
+# Set your MapR cluster name
 CLUSTER_NAME=my.cluster.com`
-
+```
 *   Run the **setup-streams.sh** script:
-`[mapr@mapr51 demo]$ ./setup-streams.sh`
-`> Deleting old /apps/racing/stream/ stream`
-`> Deleting old /apps/racing table and other information`
-`16/03/24 13:39:35 INFO Configuration.deprecation: io.bytes.per.checksum is deprecated. Instead, use dfs.bytes-per-checksum`
-`16/03/24 13:39:35 INFO fs.TrashPolicyDefault: Namenode trash configuration: Deletion interval = 0 minutes, Emptier interval = 0 minutes.`
-`Deleted /apps/racing `
-`> Create base dir for Racing Application /apps/racing/ `
-`> Create stream -path /apps/racing/stream `
-`> Create topic -path /apps/racing/stream -topic all `
-`> Create topic -path /apps/racing/stream  -topic events `
-`> Create topic -path /apps/racing/stream -topic car1 `
-`> Create topic -path /apps/racing/stream -topic car2 `
-`> Create topic -path /apps/racing/stream -topic car3 `
-`> Create topic -path /apps/racing/stream -topic car4 `
-`> Create topic -path /apps/racing/stream -topic car5 `
-`> Create topic -path /apps/racing/stream -topic car6 `
-`> Create topic -path /apps/racing/stream -topic car7 `
-`> Create topic -path /apps/racing/stream -topic car8 `
-`> Create topic -path /apps/racing/stream -topic car9 `
-`> Create topic -path /apps/racing/stream -topic car10 `
-`> Create base dir for MapR DB tables /apps/racing/db/telemetry `
-`======  Streams and Topics Created`
-
+```
+[mapr@mapr51 demo]$ ./setup-streams.sh
+> Deleting old /apps/racing/stream/ stream
+> Deleting old /apps/racing table and other information
+16/03/24 13:39:35 INFO Configuration.deprecation: io.bytes.per.checksum is deprecated. Instead, use dfs.bytes-per-checksum
+16/03/24 13:39:35 INFO fs.TrashPolicyDefault: Namenode trash configuration: Deletion interval = 0 minutes, Emptier interval = 0 minutes.
+Deleted /apps/racing 
+> Create base dir for Racing Application /apps/racing/ 
+> Create stream -path /apps/racing/stream
+> Create topic -path /apps/racing/stream -topic all
+> Create topic -path /apps/racing/stream  -topic events
+> Create topic -path /apps/racing/stream -topic car1
+> Create topic -path /apps/racing/stream -topic car2
+> Create topic -path /apps/racing/stream -topic car3
+> Create topic -path /apps/racing/stream -topic car4
+> Create topic -path /apps/racing/stream -topic car5
+> Create topic -path /apps/racing/stream -topic car6
+> Create topic -path /apps/racing/stream -topic car7
+> Create topic -path /apps/racing/stream -topic car8
+> Create topic -path /apps/racing/stream -topic car9
+> Create topic -path /apps/racing/stream -topic car10
+> Create base dir for MapR DB tables /apps/racing/db/telemetry
+======  Streams and Topics Created
+```
 ### Vagrant VM Configuration
 
 *   From a new Mac **Terminal**  window **cd** to the directory where the project will reside - In my case I used **$HOME/Documents/Git** - Then clone Tug's repository like so:
-`cd $HOME/Documents/Git
-git clone https://github.com/mapr-demos/racing-time-series.git`
-
+```
+cd $HOME/Documents/Git
+git clone https://github.com/mapr-demos/racing-time-series.git
+```
 *   Edit the **$HOME/Git/racing-time-series/demo/Vagrantfile**:
 	* Set the first **private_network** to an IP address in the same subnet as you assigned to the **MapR Sandbox VM**'s **host-only** interface - Since my MapR Sandbox VM's host-only interface is IP 192.168.56.101, I used **192.168.56.102** for this.  
 	* Add a second **private_network** line immediately below and similarly set it to an IP address in the same subnet as you assigned to the **MapR Sandbox VM**'s **internal** interface - Since my MapR Sandbox VM's internal interface is IP 192.168.100.101, I used **192.168.100.102** for this.
 	* Important note: Since that second **private_network** line will be for the **internal network**, be sure to include the **virtualbox__intnet** suffix as shown below (note the double underscore there - that's crucial)
 
 	Here's what my **Vagrantfile** looks like::
-`# -*- mode: ruby -*-
- `
-`# vi: set ft=ruby :
- `
-`Vagrant.configure(2) do |config|`
-`  config.vm.box = "box-cutter/ubuntu1404-desktop"`
-`  config.vm.network "private_network", ip: "192.168.56.102"`
-`  config.vm.network "private_network", ip: "192.168.100.102", virtualbox__intnet: true`
-`  config.vm.provider "virtualbox" do |vb|`
-`    # Display the VirtualBox GUI when booting the machine`
-`    vb.gui = true`
-`    # Customize the amount of memory on the VM:`
-`    vb.memory = "4096"`
-`    vb.customize ["modifyvm", :id, "--accelerate3d", "off"]`
-`  end
- `
-`  config.vm.provision "shell", path: "setup.sh"
- `
-`  config.vm.synced_folder ".", "/vagrant", mount_options: ["dmode=777,fmode=777"]`
-`end`
-
-* Edit the $HOME/Git/racing-time-series/demo/config.conf file so that it matches that on the Sandbox VM.
+```
+# -*- mode: ruby -*-
+ 
+# vi: set ft=ruby :
+ 
+Vagrant.configure(2) do |config|
+  config.vm.box = "box-cutter/ubuntu1404-desktop"
+  config.vm.network "private_network", ip: "192.168.56.102"
+  config.vm.network "private_network", ip: "192.168.100.102", virtualbox__intnet: true
+  config.vm.provider "virtualbox" do |vb|
+    # Display the VirtualBox GUI when booting the machine
+    vb.gui = true
+    # Customize the amount of memory on the VM:
+    vb.memory = "4096"
+    vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+  end
+ 
+  config.vm.provision "shell", path: "setup.sh"
+ 
+  config.vm.synced_folder ".", "/vagrant", mount_options: ["dmode=777,fmode=777"]
+end
+```
+* Edit the **$HOME/Git/racing-time-series/demo/config.conf** file so that it matches that on the Sandbox VM.
 
 At this point you can continue with Step 4 **Initialise the Racing demonstration** of [Tug's instructions](https://www.google.com/url?q=https://github.com/mapr-demos/racing-time-series&sa=D&ust=1458911397534000&usg=AFQjCNH9xNbNTHIwhFLKgTmJJODE7VS-9Q).  Note that you'll be starting that step in the same Mac Terminal window in which you were working on the **Vagrant VM Configuration** immediately above.
 
