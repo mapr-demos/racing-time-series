@@ -1,5 +1,6 @@
+## How to setup the demonstration on a stand alone Mac 
+
 ###Introduction
-Tugdual Grall put together an extremely nice Streams demo that uses a simulated car race as the data source. It's located here: [https://github.com/mapr-demos/racing-time-series](https://www.google.com/url?q=https://github.com/mapr-demos/racing-time-series&sa=D&ust=1458911397494000&usg=AFQjCNE7WHye9HDzuUlWaHspHkfm36D-qQ)
 
 These instructions describe how to make it run locally on a Mac OSX laptop using two VirtualBox VMs - one for the MapR 5.1 Sandbox, and the other running the Ubuntu-based Vagrant VM that Tug built.  I've modified Tug's instructions somewhat to accommodate the OSX VirtualBox environment - what you'll end up with is three network interfaces for each VM:
 
@@ -12,7 +13,7 @@ These instructions describe how to make it run locally on a Mac OSX laptop using
  *   192.168.100.102 for the Ubuntu Vagrant VM
 
 
-The following instructions for setting up this configuration replace steps 1-3 of [Tug's instructions](https://www.google.com/url?q=https://github.com/mapr-demos/racing-time-series&sa=D&ust=1458911397497000&usg=AFQjCNG_ebBPyQ2fbCHYOpeM0iCxZ0VQUA). Later, they continue with step 4
+The following instructions for setting up this configuration replace steps 1-3 of [General instructions](https://github.com/mapr-demos/racing-time-series). Later, they continue with step 4
 
 ### Prerequisites
 

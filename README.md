@@ -22,6 +22,9 @@ The application is built using various components:
 
 ## Installation
 
+The "[How to setup the demonstration on a stand alone Mac](https://github.com/mapr-demos/racing-time-series/blob/master/docs/how-to-setup-on-stand-alone-mac.md)" will help you to configure the Virtual Machines and Network;
+ you can adapt this to Windows and Linux easily.
+
 
 ### 1- Clone the project
 
@@ -83,8 +86,6 @@ In a terminal, in the Ubuntu VM, run the following command:
 * `hadoop fs -ls /` : you should see the list of folders of you MapR cluster
 
 If you encounter errors it is most of the time due to some network issues, you must be sure that your Virtual Machine can access the MapR cluster.
-
-
 
 ## Running the Demonstration
 
