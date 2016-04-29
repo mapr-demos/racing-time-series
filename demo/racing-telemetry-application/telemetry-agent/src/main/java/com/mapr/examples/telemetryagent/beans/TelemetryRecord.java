@@ -1,5 +1,7 @@
 package com.mapr.examples.telemetryagent.beans;
 
+import java.text.SimpleDateFormat;
+
 public class TelemetryRecord {
     private double carId;
     private long timestamp;

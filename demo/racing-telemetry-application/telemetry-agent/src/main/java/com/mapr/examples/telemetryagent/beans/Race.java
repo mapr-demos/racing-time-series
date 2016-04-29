@@ -1,5 +1,6 @@
 package com.mapr.examples.telemetryagent.beans;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 
 public class Race {
@@ -30,4 +31,14 @@ public class Race {
     public void setCarIds(Collection<Integer> carIds) {
         this.carIds = carIds;
     }
+
+    public String getId() {
+        try {
+            return new SimpleDateFormat("yyyyMMddHHmmss").format(getTimestamp() * 1000L);
+        } catch (Exception e) {
+            throw new RuntimeException("Race Record must have a time stamp");
+        }
+
+    }
+
 }

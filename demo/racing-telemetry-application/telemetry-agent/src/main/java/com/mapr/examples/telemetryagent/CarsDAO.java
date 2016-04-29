@@ -12,11 +12,13 @@ import com.mapr.examples.telemetryagent.util.Batcher;
 import com.mapr.examples.telemetryagent.util.NoRacesException;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
 import org.ojai.Document;
 import org.ojai.store.QueryCondition;
 import org.ojai.store.exceptions.DocumentNotFoundException;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,11 +26,14 @@ import java.util.stream.StreamSupport;
 
 public class CarsDAO {
     Table telemetryTable;
+    Table telemetryAllCarsTable;
     Table racesTable;
 
     final static public String APPS_DIR = "/apps/racing/db/telemetry/";
     public static final String RACES_TABLE = APPS_DIR + "races";
+    public static final String ALL_CARS_TABLE = APPS_DIR + "all_cars";
     private int id;
+    private String carName;
 
     public CarsDAO() {
         this.racesTable = this.getTable(RACES_TABLE);
@@ -36,32 +41,12 @@ public class CarsDAO {
 
     public CarsDAO(int id, String carName) {
         this.id = id;
+        this.carName = carName;
         this.telemetryTable = this.getTable(APPS_DIR + carName);
+        this.telemetryAllCarsTable = this.getTable(ALL_CARS_TABLE);
         this.racesTable = this.getTable(RACES_TABLE);
     }
 
-    private synchronized int autoincRacesCounter() {
-        final String RACES_SAVED_FIELD = "racesSaved";
-        final String COUNTER_DOCUMENT_ID = "count";
-
-        Document racesCount;
-        try {
-            racesCount = this.racesTable.findById(COUNTER_DOCUMENT_ID);
-            if (racesCount == null) {
-                racesCount = MapRDB.newDocument();
-                racesCount.set(RACES_SAVED_FIELD, 0);
-            }
-        } catch (DocumentNotFoundException e) {
-            racesCount = MapRDB.newDocument();
-            racesCount.set(RACES_SAVED_FIELD, 0);
-        }
-
-        int counter = racesCount.getInt(RACES_SAVED_FIELD) + 1;
-        racesCount.set(RACES_SAVED_FIELD, counter);
-
-        this.racesTable.insertOrReplace(COUNTER_DOCUMENT_ID, racesCount);
-        return counter;
-    }
 
     private static final Object lock = new Object();
     private Table getTable(String tableName) {
@@ -79,8 +64,9 @@ public class CarsDAO {
     public void newRace(String raceDataJson) {
         Document document = MapRDB.newDocument(raceDataJson).
                 set("_type", "race");
-        racesTable.insert(String.valueOf(autoincRacesCounter()), document);
-
+        document.set("_id", document.getString("id") );
+        document.delete("id"); // keep only the _id for the db
+        racesTable.insert( document);
         racesTable.flush();
     }
 
@@ -93,6 +79,7 @@ public class CarsDAO {
                 records.sort((d1, d2) -> ((Double)d1.getDouble("racetime")).compareTo(d2.getDouble("racetime")));
 
                 double currentTimestamp = records.get(0).getDouble("timestamp");
+                String raceId  = records.get(0).getString("race_id");
 
                 List<Document> recordsOfSingleRace = new ArrayList<>();
                 for (Document record : records) {
@@ -103,14 +90,23 @@ public class CarsDAO {
                 }
 
                 Document document = MapRDB.newDocument();
-                document.setArray("records", recordsOfSingleRace);
+                document.set("records", recordsOfSingleRace);
+
+
 
                 document.set("timestamp", currentTimestamp);
+                document.set("race_id", raceId);
                 document.set("racetime", records.get(0).getDouble("racetime"));
                 String key = StringUtils.leftPad(((Double) currentTimestamp).toString(), 10, '0') + "/" +
                         StringUtils.leftPad(((Double)records.get(0).getDouble("racetime")).toString(), 4, '0');
                 telemetryTable.insert(key, document);
                 telemetryTable.flush();
+
+                // add global informations to the record for all data table
+                key = this.carName + "-" + key;
+                document.set("car",  this.carName);
+                telemetryAllCarsTable.insert(key, document);
+
             });
 
     public void insert(String recordValueJson) {

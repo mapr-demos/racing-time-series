@@ -99,12 +99,14 @@ public class CarStreamsRouter {
         try {
             long timestamp = record.getLong("timestamp");
             double raceTime = record.getDouble("racetime");
+            String raceId = record.getString("race_id");
 
             JSONArray carsInfo = record.getJSONArray("cars");
             for (int i = 0; i < carsInfo.length(); i++) {
                 JSONObject carInfo = carsInfo.getJSONObject(i);
                 carInfo.put("racetime", raceTime);
                 carInfo.put("timestamp", timestamp);
+                carInfo.put("race_id", raceId);
                 Integer carId = carInfo.getInt("id");
                 carInfo.remove("id");
 

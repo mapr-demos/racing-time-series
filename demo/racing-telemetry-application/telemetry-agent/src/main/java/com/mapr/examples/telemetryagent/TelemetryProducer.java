@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -243,6 +244,10 @@ public class TelemetryProducer {
             jsonTelemetryRecord.put("racetime", time);
             jsonTelemetryRecord.put("timestamp", timestamp);
             jsonTelemetryRecord.put("cars", allCarsJSON);
+
+            // add the race id (being the time stamp as string
+            jsonTelemetryRecord.put("race_id", new SimpleDateFormat("yyyyMMddHHmmss").format(timestamp * 1000L));
+
             return jsonTelemetryRecord;
         }
 
