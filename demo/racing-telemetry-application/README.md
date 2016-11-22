@@ -84,3 +84,11 @@ GROUP BY  t.car, c.model, c.driver
 ```
 
 
+## Process Sensor Data with Flink
+
+In your favorite IDE open the Processing Flink project and run the com.mapr.examples.telemetryagent.CarSpeedAnalyzer class that prints
+the average speed of each car for the last 10 seconds
+
+
+```
+```
