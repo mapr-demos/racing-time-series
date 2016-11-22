@@ -1,0 +1,10 @@
+{"id" : "car1" , "model" : "Porsche 911", "bid" : 1 , "driver" : "John Smith" , "year" : 2012}
+{"id" : "car2" , "model" : "Peugeot 406", "bid" : 2 , "driver" : "Simon Johnson" , "year" : 2014}
+{"id" : "car3" , "model" : "Porsche 944", "bid" : 3 , "driver" : "Al Bounty" , "year" : 20012}
+{"id" : "car4" , "model" : "Nissan NSX", "bid" : 4 , "driver" : "Jane Donovan" , "year" : 2014}
+{"id" : "car5" , "model" : "Ferrari F200", "bid" : 5 , "driver" : "J.J. Simson" , "year" : 2014}
+{"id" : "car6" , "model" : "Toyota Proto", "bid" : 6 , "driver" : "Duke Ellington" , "year" : 2016}
+{"id" : "car7" , "model" : "Audi A100", "bid" : 7 , "driver" : "Alain Prost" , "year" : 2016}
+{"id" : "car8" , "model" : "BMW Race 1", "bid" : 8 , "driver" : "Michael Schumaker" , "year" : 2016}
+{"id" : "car9" , "model" : "Mercedes 200", "bid" : 9 , "driver" : "Denis Dupont" , "year" : 2016}
+{"id" : "car10" , "model" : "Proto Q", "bid" : 10 , "driver" : "Bernie Klingo" , "year" : 2016}

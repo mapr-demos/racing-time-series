@@ -108,14 +108,31 @@ public class CarStreamsRouter {
                 carInfo.put("timestamp", timestamp);
                 carInfo.put("race_id", raceId);
                 Integer carId = carInfo.getInt("id");
-                carInfo.remove("id");
 
                 getBatcher(format(writeTopic, carId)).add(carInfo);
+                postSensorData(carInfo);
             }
         } catch (JSONException e) {
             System.out.println("Error during processing record " + record.toString());
             e.printStackTrace();
         }
+    }
+
+  /**
+   * Post single sensor data to the sensor_data topic
+   * @param json
+   */
+  private void postSensorData(JSONObject json) {
+        ProducerRecord<String, byte[]> rec = new ProducerRecord<>("/apps/racing/stream:sensors_data", json.toString().getBytes());
+        producer.send(rec, (recordMetadata, e) -> {
+            if (e != null) {
+                System.out.println("Exception occurred while sending :(");
+                System.out.println(e.toString());
+                return;
+            }
+        });
+
+
     }
 
     private class ConsumerConfigurer extends Configurer {

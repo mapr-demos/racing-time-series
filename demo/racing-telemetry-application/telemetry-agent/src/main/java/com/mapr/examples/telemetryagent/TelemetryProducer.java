@@ -156,8 +156,7 @@ public class TelemetryProducer {
         System.out.println(">> Event " + eventName + ": " + value.toString());
         producer.send(rec, (recordMetadata, e) -> {
             if (e != null) {
-                System.err.println("Exception occurred while sending :(");
-                System.err.println(e.toString());
+                System.err.println("Exception occurred while sending :" + e);
                 return;
             }
         });

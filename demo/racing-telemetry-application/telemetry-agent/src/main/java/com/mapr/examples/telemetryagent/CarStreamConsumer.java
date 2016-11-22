@@ -32,7 +32,7 @@ public class CarStreamConsumer {
             consumer.close();
         }));
     }
-
+    // work with record object
     public void start() {
         long pollTimeOut = 1000;
         while(true) {

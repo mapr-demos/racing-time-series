@@ -22,6 +22,7 @@
     <module>telemetry-agent</module>
     <module>telemetry-web-ui</module>
     <module>telemetry-tester</module>
+    <module>processing-flink</module>
   </modules>
 
 
